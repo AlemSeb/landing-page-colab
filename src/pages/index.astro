@@ -8,6 +8,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const demoUrl = new URL(`${base}/demo/`, Astro.site).href;
 const demoQr = await QRCode.toString(demoUrl, { type: 'svg', margin: 1, color: { dark: '#0b1530' } });
 
+// 38.8% de un aula de 45 son unos 17 estudiantes
+const enRiesgo = new Set([1, 4, 7, 9, 12, 14, 17, 20, 22, 24, 27, 29, 32, 35, 38, 40, 43]);
+const mateo = 22;
+
 const etapas = [
 	{ nombre: 'Diagnóstico', texto: 'Escuchamos a estudiantes, familias y docentes para entender su realidad.' },
 	{ nombre: 'Laboratorios', texto: 'Espacios de cine, deporte y muralismo donde los adolescentes crean y deciden.' },
@@ -80,10 +84,9 @@ const sostenibilidad = [
 					<p class="etiqueta">Tambogrande, Piura</p>
 					<h1>Elegir también es una <em>oportunidad</em></h1>
 					<p class="bajada">
-						Mateo podría ser el protagonista de su propia historia y no una cifra más. Usamos el arte y la
-						cultura para que los adolescentes encuentren nuevas formas de participar.
+						Usamos el arte y la cultura para que los adolescentes encuentren nuevas formas de participar.
 					</p>
-					<a class="boton" href="#innovacion">Conoce los murales con realidad aumentada</a>
+					<a class="boton" href="#mateo">Conoce la historia de Mateo</a>
 				</div>
 				<Image
 					class="hero-logo"
@@ -95,21 +98,77 @@ const sostenibilidad = [
 				/>
 			</section>
 
-			<section id="impacto" class="impacto">
-				<div class="cifra">
-					<strong>38.8%</strong>
-					<p>de escolares de secundaria en Perú ha consumido alcohol o tabaco alguna vez.</p>
-					<cite>DEVIDA, 2024</cite>
+			<section id="mateo" class="historia" data-paso="1">
+				<div class="historia-visual">
+					<div class="aula" aria-hidden="true">
+						{
+							Array.from({ length: 45 }, (_, i) => (
+								<span class:list={['alumno', { riesgo: enRiesgo.has(i), mateo: i === mateo }]}>
+									<svg viewBox="0 0 24 32">
+										<circle cx="12" cy="7" r="6" />
+										<path d="M2 32c0-9 4-15 10-15s10 6 10 15z" />
+									</svg>
+								</span>
+							))
+						}
+					</div>
+					<p class="aula-pie">Un aula de 45 estudiantes, como el grupo con el que trabajamos.</p>
 				</div>
-				<div class="impacto-texto">
+				<div class="historia-pasos">
+					<article class="paso" data-paso="1">
+						<p class="dato"><span data-contar="38.8" data-decimales="1">38.8</span>%</p>
+						<p>
+							de escolares de secundaria en Perú ha consumido alcohol o tabaco alguna vez.
+							<cite>DEVIDA, 2024</cite>
+						</p>
+						<p>En un aula de 45, eso equivale a unos 17 estudiantes.</p>
+					</article>
+					<article class="paso" data-paso="2">
+						<h2>Uno de ellos podría ser Mateo</h2>
+						<p>Mateo podría ser el protagonista de su propia historia y no una cifra más.</p>
+					</article>
+					<article class="paso" data-paso="3">
+						<h2>¿Qué historia le toca a Mateo?</h2>
+						<div class="eleccion" role="group" aria-label="Elige el camino de Mateo">
+							<button type="button" data-eleccion="cifra" aria-pressed="false">Una cifra más</button>
+							<button type="button" data-eleccion="protagonista" aria-pressed="false">
+								Protagonista de su historia
+							</button>
+						</div>
+						<div aria-live="polite">
+							<p data-resultado="cifra" hidden>
+								Sin otra opción, Mateo se pierde en la estadística. Prueba el otro camino.
+							</p>
+							<p data-resultado="protagonista" hidden>
+								Elegir también es una oportunidad: con arte y cultura, Mateo y su aula encuentran nuevas
+								formas de participar. <a href="#impacto">Mira el cambio que buscamos</a>
+							</p>
+						</div>
+					</article>
+				</div>
+			</section>
+
+			<section id="impacto" class="impacto">
+				<div class="contenedor">
 					<h2>Impacto social</h2>
 					<blockquote>
 						“No queremos solo realizar actividades. Queremos generar nuevas oportunidades de participación”.
 					</blockquote>
 					<ul class="metas">
-						<li><strong>45</strong> estudiantes de la I.E. 14144 Santa Rosa</li>
-						<li><strong>80% ↑</strong> habilidades de prevención</li>
-						<li><strong>70% ↑</strong> participación comunitaria</li>
+						<li>
+							<strong><span data-contar="45">45</span></strong>
+							<span>estudiantes de la I.E. 14144 Santa Rosa</span>
+						</li>
+						<li>
+							<strong><span data-contar="80">80</span>% ↑</strong>
+							<span>habilidades de prevención</span>
+							<div class="medidor" style="--valor: 80%"><i></i></div>
+						</li>
+						<li>
+							<strong><span data-contar="70">70</span>% ↑</strong>
+							<span>participación comunitaria</span>
+							<div class="medidor" style="--valor: 70%"><i></i></div>
+						</li>
 					</ul>
 				</div>
 			</section>
@@ -183,20 +242,37 @@ const sostenibilidad = [
 							<h3>Pruébalo ahora</h3>
 							<ol>
 								<li>Escanea el código QR con tu celular.</li>
-								<li>Abre la cámara y apunta a este mural.</li>
+								<li>Abre la cámara y apunta al mural.</li>
 								<li>Cambia entre el mural interactivo y el documental.</li>
 							</ol>
 							<div class="qr" set:html={demoQr} role="img" aria-label="Código QR de la demo" />
 							<a class="boton" href={`${base}/demo/`}>Abrir la demo en este dispositivo</a>
 							<p class="aviso">Mural y video de prueba, hasta tener los que creen los estudiantes.</p>
 						</div>
-						<img
-							src={`${base}/demo/mural.png`}
-							alt="Mural de prueba: jóvenes tomados de la mano frente a cerros, un río, un árbol de mango, una pelota y una claqueta de cine."
-							width="1200"
-							height="900"
-							loading="lazy"
-						/>
+						<div class="mural-vivo">
+							<button type="button" class="mural-boton" aria-pressed="false">
+								<img
+									src={`${base}/demo/mural.png`}
+									alt="Mural de prueba: jóvenes tomados de la mano frente a cerros, un río, un árbol de mango, una pelota y una claqueta de cine. Tócalo para simular el escaneo."
+									width="1200"
+									height="900"
+									loading="lazy"
+								/>
+								<span class="capa-ar" aria-hidden="true">
+									<i class="escaner"></i>
+									<i class="sol-aro"></i>
+									<i class="sol"></i>
+									<i class="pelota"></i>
+									<i class="mango" style="left: 17.9%; top: 43.9%"></i>
+									<i class="mango" style="left: 27.9%; top: 43.9%; animation-delay: -0.25s"></i>
+									<i class="mango" style="left: 21.3%; top: 50.6%; animation-delay: -0.5s"></i>
+									<i class="mango" style="left: 23.3%; top: 37.8%; animation-delay: -0.4s"></i>
+									<i class="mango" style="left: 30.8%; top: 51.1%; animation-delay: -0.1s"></i>
+									<b class="cartel">Cuídate y cuida a tu comunidad</b>
+								</span>
+							</button>
+							<p class="mural-pista">Sin celular a la mano: toca el mural para ver lo que mostraría la cámara.</p>
+						</div>
 					</div>
 				</div>
 			</section>
@@ -235,6 +311,66 @@ const sostenibilidad = [
 			<Image src={isotipo} alt="" width={36} height={36} />
 			<p>COLAB Cultural · El arte y la cultura transforman. La comunidad nos une.</p>
 		</footer>
+		<script>
+			document.documentElement.classList.add('js');
+			const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			// La historia de Mateo avanza con el paso que cruza el centro de la pantalla
+			const historia = document.querySelector('.historia');
+			const alCentro = new IntersectionObserver(
+				(entradas) => {
+					for (const entrada of entradas) {
+						if (entrada.isIntersecting) historia.dataset.paso = entrada.target.dataset.paso;
+					}
+				},
+				// En celular el aula queda fija arriba, así que la línea de cambio baja
+				{ rootMargin: matchMedia('(max-width: 760px)').matches ? '-65% 0px -35% 0px' : '-45% 0px -45% 0px' },
+			);
+			document.querySelectorAll('.paso').forEach((paso) => alCentro.observe(paso));
+
+			const opciones = document.querySelectorAll('[data-eleccion]:is(button)');
+			opciones.forEach((boton) => {
+				boton.addEventListener('click', () => {
+					const eleccion = boton.dataset.eleccion;
+					historia.dataset.eleccion = eleccion;
+					opciones.forEach((b) => b.setAttribute('aria-pressed', String(b === boton)));
+					document
+						.querySelectorAll('[data-resultado]')
+						.forEach((p) => (p.hidden = p.dataset.resultado !== eleccion));
+				});
+			});
+
+			// Las cifras cuentan desde cero la primera vez que se ven
+			function contar(el) {
+				const meta = Number(el.dataset.contar);
+				const decimales = Number(el.dataset.decimales ?? 0);
+				const inicio = performance.now();
+				const cuadro = (ahora) => {
+					const t = Math.min((ahora - inicio) / 1400, 1);
+					el.textContent = (meta * (1 - (1 - t) ** 3)).toFixed(decimales);
+					if (t < 1) requestAnimationFrame(cuadro);
+				};
+				requestAnimationFrame(cuadro);
+			}
+			const alVer = new IntersectionObserver(
+				(entradas) => {
+					for (const entrada of entradas) {
+						if (!entrada.isIntersecting) continue;
+						alVer.unobserve(entrada.target);
+						entrada.target.classList.add('visto');
+						if (entrada.target.dataset.contar && !quieto) contar(entrada.target);
+					}
+				},
+				{ threshold: 0.6 },
+			);
+			document.querySelectorAll('[data-contar], .medidor').forEach((el) => alVer.observe(el));
+
+			// Vista previa del mural sin celular
+			const mural = document.querySelector('.mural-boton');
+			mural.addEventListener('click', () => {
+				mural.setAttribute('aria-pressed', String(mural.classList.toggle('activo')));
+			});
+		</script>
 	</body>
 </html>
 
@@ -379,53 +515,205 @@ const sostenibilidad = [
 		background: var(--marino);
 	}
 
-	.impacto {
+	.historia {
 		display: grid;
-		grid-template-columns: minmax(0, 420px) minmax(0, 600px);
+		grid-template-columns: minmax(0, 440px) minmax(0, 480px);
 		justify-content: center;
-		align-items: center;
-		gap: 48px;
+		gap: 64px;
+		padding-top: 0;
+		padding-bottom: 0;
 		background: var(--crema);
 	}
-	.cifra {
-		background: var(--morado);
-		color: #fff;
-		padding: 36px;
-		border-radius: 24px;
+	.historia-visual {
+		position: sticky;
+		top: 76px;
+		align-self: start;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		height: calc(100vh - 76px);
+		height: calc(100svh - 76px);
 	}
-	.cifra strong {
+	.aula {
+		display: grid;
+		grid-template-columns: repeat(9, 1fr);
+		gap: 10px 6px;
+	}
+	.alumno {
+		position: relative;
+		color: #d9d2e3;
+		transition:
+			color 0.6s,
+			transform 0.6s;
+	}
+	.alumno svg {
 		display: block;
-		font-family: 'Bree Serif', Georgia, serif;
-		font-weight: 400;
-		font-size: clamp(3.5rem, 9vw, 5.5rem);
-		line-height: 1;
-		margin-bottom: 12px;
+		width: 100%;
+		fill: currentColor;
 	}
-	.cifra cite {
+	.alumno.riesgo {
+		color: var(--morado);
+	}
+	.alumno.mateo::after {
+		content: 'Mateo';
+		position: absolute;
+		left: 50%;
+		top: 100%;
+		translate: -50% 0;
+		font-size: 0.6rem;
+		font-weight: 800;
+		color: var(--marino);
+		opacity: 0;
+		transition: opacity 0.6s;
+	}
+	.historia:not([data-paso='1']) .alumno.riesgo:not(.mateo) {
+		color: #b3a1c9;
+	}
+	.historia:not([data-paso='1']) .alumno.mateo {
+		z-index: 1;
+		color: var(--naranja);
+		transform: scale(1.6);
+	}
+	.historia:not([data-paso='1']) .alumno.mateo::after {
+		opacity: 1;
+	}
+	.historia[data-eleccion='cifra'] .alumno.riesgo {
+		color: var(--morado);
+		transform: none;
+	}
+	.historia[data-eleccion='cifra'] .alumno.mateo::after {
+		opacity: 0;
+	}
+	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n + 1) {
+		color: var(--magenta);
+	}
+	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n + 2) {
+		color: var(--azul);
+	}
+	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n + 3) {
+		color: var(--verde);
+	}
+	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n + 4) {
+		color: var(--morado);
+	}
+	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n) {
+		color: #ffb000;
+	}
+	.historia[data-eleccion='protagonista'] .alumno.mateo {
+		color: var(--naranja);
+		animation: saltar 0.7s ease-in-out infinite alternate;
+	}
+	@keyframes saltar {
+		to {
+			transform: scale(1.6) translateY(-12%);
+		}
+	}
+	.aula-pie {
+		margin: 28px 0 0;
+		font-size: 0.9rem;
+		opacity: 0.7;
+	}
+	.paso {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		min-height: 85vh;
+	}
+	.paso a {
+		color: var(--morado);
+		font-weight: 800;
+	}
+	.paso cite {
+		display: block;
 		font-style: normal;
 		font-size: 0.85rem;
-		opacity: 0.8;
+		opacity: 0.7;
 	}
+	.dato {
+		margin: 0;
+		font-family: 'Bree Serif', Georgia, serif;
+		font-size: clamp(4rem, 11vw, 6.5rem);
+		line-height: 1;
+		color: var(--morado);
+		font-variant-numeric: tabular-nums;
+	}
+	.eleccion {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+		margin: 8px 0 20px;
+	}
+	.eleccion button {
+		padding: 14px 22px;
+		border: 2px solid var(--marino);
+		border-radius: 999px;
+		background: transparent;
+		color: var(--marino);
+		font: inherit;
+		font-weight: 800;
+		cursor: pointer;
+	}
+	.eleccion button[aria-pressed='true'] {
+		background: var(--marino);
+		color: #fff;
+	}
+	.eleccion button[data-eleccion='protagonista'][aria-pressed='true'] {
+		border-color: var(--naranja);
+		background: var(--naranja);
+		color: var(--marino);
+	}
+	[hidden] {
+		display: none !important;
+	}
+
 	blockquote {
-		margin: 0 0 24px;
+		margin: 0 0 32px;
 		padding-left: 16px;
 		border-left: 4px solid var(--naranja);
 		font-size: 1.2rem;
+		max-width: 46ch;
 	}
 	.metas {
 		list-style: none;
 		padding: 0;
 		margin: 0;
 		display: grid;
-		gap: 10px;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 24px;
+	}
+	.metas li {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 24px;
+		border-radius: 20px;
+		background: var(--lila);
 	}
 	.metas strong {
-		display: inline-block;
-		min-width: 4.5ch;
 		font-family: 'Bree Serif', Georgia, serif;
 		font-weight: 400;
-		font-size: 1.5rem;
+		font-size: 3rem;
+		line-height: 1;
 		color: var(--morado);
+		font-variant-numeric: tabular-nums;
+	}
+	.medidor {
+		height: 10px;
+		margin-top: auto;
+		border-radius: 999px;
+		background: #fff;
+		overflow: hidden;
+	}
+	.medidor i {
+		display: block;
+		height: 100%;
+		width: var(--valor);
+		border-radius: inherit;
+		background: var(--naranja);
+		transition: width 1.4s ease-out;
+	}
+	.js .medidor:not(.visto) i {
+		width: 0;
 	}
 
 	.etapas {
@@ -532,8 +820,128 @@ const sostenibilidad = [
 		margin: 0 0 20px;
 		padding-left: 1.2em;
 	}
-	.prueba img {
+	.mural-boton {
+		position: relative;
+		display: block;
+		width: 100%;
+		padding: 0;
+		border: 0;
 		border-radius: 12px;
+		overflow: hidden;
+		background: none;
+		font: inherit;
+		cursor: pointer;
+	}
+	.mural-boton img {
+		display: block;
+		width: 100%;
+	}
+	.mural-pista {
+		margin: 12px 0 0;
+		font-size: 0.9rem;
+		opacity: 0.75;
+	}
+	/* Las posiciones salen de las coordenadas del mural (1200 × 900) */
+	.capa-ar {
+		position: absolute;
+		inset: 0;
+		container-type: inline-size;
+	}
+	.capa-ar > * {
+		position: absolute;
+		translate: -50% -50%;
+		opacity: 0;
+		transition: opacity 0.4s 0.9s;
+	}
+	.mural-boton.activo .capa-ar > * {
+		opacity: 1;
+	}
+	.capa-ar .escaner {
+		left: 50%;
+		top: 0;
+		width: 100%;
+		height: 6px;
+		background: #fff;
+		box-shadow: 0 0 18px 6px rgb(255 255 255 / 0.7);
+		transition: none;
+	}
+	.mural-boton.activo .escaner {
+		animation: escanear 0.9s ease-in-out forwards;
+	}
+	@keyframes escanear {
+		from {
+			top: 0;
+			opacity: 1;
+		}
+		99% {
+			opacity: 1;
+		}
+		to {
+			top: 100%;
+			opacity: 0;
+		}
+	}
+	.sol-aro,
+	.sol,
+	.pelota,
+	.mango {
+		aspect-ratio: 1;
+		border-radius: 50%;
+	}
+	.sol-aro {
+		left: 77.5%;
+		top: 21.1%;
+		width: 19%;
+		border: 5px solid #ffc21a;
+		animation: latir 1.1s ease-in-out infinite alternate;
+	}
+	.sol {
+		left: 77.5%;
+		top: 21.1%;
+		width: 11%;
+		background: var(--naranja);
+		animation: latir 1.1s ease-in-out infinite alternate-reverse;
+	}
+	.pelota {
+		left: 35%;
+		top: 89.4%;
+		width: 8.6%;
+		background: #fff;
+		border: 3px solid var(--marino);
+		animation: rebotar 0.52s ease-out infinite alternate;
+	}
+	.mango {
+		width: 3.4%;
+		background: var(--naranja);
+		border: 2px solid var(--marino);
+		animation: latir 0.7s ease-in-out infinite alternate;
+	}
+	.capa-ar .cartel {
+		left: 50%;
+		top: 9%;
+		padding: 0.4em 1em;
+		border: 3px solid #fff;
+		border-radius: 999px;
+		background: var(--morado);
+		color: #fff;
+		font-size: clamp(0.7rem, 3.4cqw, 1.2rem);
+		white-space: nowrap;
+		animation: flotar-cartel 1.5s ease-in-out infinite alternate;
+	}
+	@keyframes latir {
+		to {
+			scale: 1.5;
+		}
+	}
+	@keyframes rebotar {
+		to {
+			translate: -50% -330%;
+		}
+	}
+	@keyframes flotar-cartel {
+		to {
+			translate: -50% -30%;
+		}
 	}
 	.qr {
 		width: 150px;
@@ -661,8 +1069,13 @@ const sostenibilidad = [
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.pantalla i {
-			animation: none;
+		.pantalla i,
+		.capa-ar > *,
+		.alumno.mateo {
+			animation: none !important;
+		}
+		.capa-ar .escaner {
+			display: none;
 		}
 		html {
 			scroll-behavior: auto;
@@ -739,10 +1152,10 @@ const sostenibilidad = [
 			display: none;
 		}
 		.hero,
-		.impacto,
 		.etapas,
 		.opciones,
 		.prueba,
+		.metas,
 		.tarjetas {
 			grid-template-columns: 1fr;
 		}
@@ -751,8 +1164,34 @@ const sostenibilidad = [
 			max-width: 260px;
 			margin: 0 auto;
 		}
-		.impacto {
-			gap: 32px;
+		.historia {
+			display: block;
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+		.historia-visual {
+			top: 65px;
+			z-index: 1;
+			height: auto;
+			margin: 0 -16px;
+			padding: 16px 16px 12px;
+			background: var(--crema);
+			border-bottom: 1px solid #ecdcc6;
+		}
+		.aula {
+			max-width: 300px;
+			margin: 0 auto;
+			gap: 8px 4px;
+		}
+		.aula-pie {
+			margin-top: 16px;
+			text-align: center;
+			font-size: 0.8rem;
+		}
+		.paso {
+			justify-content: flex-start;
+			min-height: 62vh;
+			padding-top: 32px;
 		}
 	}
 </style>
