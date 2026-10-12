@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import isotipo from '../assets/isotipo.png';
-import logo from '../assets/logo-colab-cultural.png';
+import marca from '../assets/marca.png';
 import QRCode from 'qrcode';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -126,11 +126,13 @@ const sostenibilidad = [
 				<span>COLAB <small>Cultural</small></span>
 			</a>
 			<nav aria-label="Secciones">
+				<a href="#mateo">Mateo</a>
 				<a href="#impacto">Impacto</a>
 				<a href="#proceso">Proceso</a>
 				<a href="#innovacion">Innovación</a>
 				<a href="#aliados">Aliados</a>
 			</nav>
+			<i class="avance" aria-hidden="true"></i>
 		</header>
 
 		<main>
@@ -143,14 +145,14 @@ const sostenibilidad = [
 					</p>
 					<a class="boton" href="#mateo">Conoce la historia de Mateo</a>
 				</div>
-				<Image
+				<div
 					class="hero-logo"
-					src={logo}
-					alt="COLAB Cultural. El arte y la cultura transforman. La comunidad nos une."
-					width={520}
-					height={520}
-					loading="eager"
-				/>
+					role="img"
+					aria-label="COLAB Cultural. El arte y la cultura transforman. La comunidad nos une."
+				>
+					<Image class="gira" src={isotipo} alt="" width={300} height={300} loading="eager" />
+					<Image src={marca} alt="" width={420} height={197} loading="eager" />
+				</div>
 			</section>
 
 			<section id="mateo" class="historia" data-paso="1">
@@ -401,7 +403,7 @@ const sostenibilidad = [
 				</div>
 			</section>
 
-			<section class="contenedor">
+			<section id="sostenibilidad" class="contenedor">
 				<h2>Sostenibilidad y durabilidad</h2>
 				<div class="tarjetas">
 					{
@@ -431,6 +433,53 @@ const sostenibilidad = [
 		<script>
 			document.documentElement.classList.add('js');
 			const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			// Entrada suave de los bloques; los hermanos entran uno tras otro
+			if (!quieto) {
+				const alEntrar = new IntersectionObserver(
+					(entradas) => {
+						for (const entrada of entradas) {
+							if (!entrada.isIntersecting) continue;
+							alEntrar.unobserve(entrada.target);
+							entrada.target.classList.add('visto');
+						}
+					},
+					{ threshold: 0.12 },
+				);
+				const bloques =
+					'.hero > *, #impacto h2, #impacto blockquote, .metas li, #proceso > *, #innovacion .contenedor > :not(.opciones), .opciones article, #aliados > *, #sostenibilidad h2, .tarjetas article, .nota, .cierre p';
+				document.querySelectorAll(bloques).forEach((el) => {
+					const orden = [...el.parentElement.children].filter((h) => h.matches(bloques)).indexOf(el);
+					el.style.setProperty('--orden', Math.min(orden, 4));
+					el.classList.add('aparece');
+					alEntrar.observe(el);
+				});
+			}
+
+			// La barra marca la sección actual y cuánto se ha recorrido
+			const enlaces = document.querySelectorAll('.barra nav a');
+			const alLeer = new IntersectionObserver(
+				(entradas) => {
+					for (const entrada of entradas) {
+						if (!entrada.isIntersecting) continue;
+						enlaces.forEach((a) => {
+							if (a.hash === '#' + entrada.target.id) a.setAttribute('aria-current', 'true');
+							else a.removeAttribute('aria-current');
+						});
+					}
+				},
+				{ rootMargin: '-40% 0px -55% 0px' },
+			);
+			document.querySelectorAll('main section[id]').forEach((seccion) => alLeer.observe(seccion));
+
+			const avance = document.querySelector('.avance');
+			const medir = () => {
+				const total = document.documentElement.scrollHeight - innerHeight;
+				avance.style.setProperty('--avance', total > 0 ? Math.min(scrollY / total, 1) : 0);
+			};
+			addEventListener('scroll', medir, { passive: true });
+			addEventListener('resize', medir);
+			medir();
 
 			// La historia de Mateo avanza con el paso que cruza el centro de la pantalla
 			const historia = document.querySelector('.historia');
@@ -643,6 +692,50 @@ const sostenibilidad = [
 	.barra nav a:hover {
 		color: var(--morado);
 	}
+	.barra nav a[aria-current] {
+		color: var(--morado);
+		box-shadow: 0 3px 0 var(--naranja);
+	}
+	/* Cuánto de la página se ha recorrido */
+	.avance {
+		position: absolute;
+		left: 0;
+		bottom: -1px;
+		width: 100%;
+		height: 3px;
+		background: linear-gradient(90deg, var(--naranja), var(--magenta), var(--morado), var(--azul), var(--verde));
+		transform-origin: left;
+		scale: var(--avance, 0) 1;
+	}
+	.hero-logo {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+	}
+	.gira {
+		width: 62%;
+		border-radius: 50%;
+		animation: girar 80s linear infinite;
+	}
+	@keyframes girar {
+		to {
+			rotate: 1turn;
+		}
+	}
+	/* Los bloques entran suavemente la primera vez que se ven */
+	.aparece {
+		opacity: 0;
+		translate: 0 28px;
+		transition:
+			opacity 0.7s ease-out,
+			translate 0.7s ease-out;
+		transition-delay: calc(var(--orden, 0) * 90ms);
+	}
+	.aparece.visto {
+		opacity: 1;
+		translate: none;
+	}
 
 	.hero {
 		max-width: 1080px;
@@ -662,8 +755,14 @@ const sostenibilidad = [
 		font-weight: 800;
 		text-decoration: none;
 	}
+	.boton {
+		transition:
+			background 0.2s,
+			translate 0.2s;
+	}
 	.boton:hover {
 		background: var(--marino);
+		translate: 0 -2px;
 	}
 
 	.historia {
@@ -1294,6 +1393,7 @@ const sostenibilidad = [
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.pantalla i,
+		.gira,
 		.capa-ar > *,
 		.alumno.mateo {
 			animation: none !important;
