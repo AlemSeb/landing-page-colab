@@ -2,11 +2,35 @@
 import { Image } from 'astro:assets';
 import isotipo from '../assets/isotipo.png';
 import marca from '../assets/marca.png';
+import trazo from '../assets/logo/trazo.png';
+import cuerpoNaranja from '../assets/logo/cuerpo-naranja.png';
+import cuerpoVerde from '../assets/logo/cuerpo-verde.png';
+import cabezaMagenta from '../assets/logo/cabeza-magenta.png';
+import cabezaAzul from '../assets/logo/cabeza-azul.png';
+import cabezaNaranja from '../assets/logo/cabeza-naranja.png';
+import cabezaVerde from '../assets/logo/cabeza-verde.png';
+import pelota from '../assets/logo/pelota.png';
+import rayos from '../assets/logo/rayos.png';
 import QRCode from 'qrcode';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const demoUrl = new URL(`${base}/demo/`, Astro.site).href;
 const demoQr = await QRCode.toString(demoUrl, { type: 'svg', margin: 1, color: { dark: '#0b1530' } });
+
+// Piezas del isotipo en el orden en que se pintan al hacer scroll.
+// de/dur: tramo del recorrido (0 a 1) en que aparece cada una.
+// Los barridos giran alrededor del centro del aro; los brotes crecen desde su propio centro.
+const capas = [
+	{ src: trazo, tipo: 'barrido-inverso', de: 0, dur: 0.42, estilo: '--desde: 108deg; --giro: 220deg' },
+	{ src: cabezaMagenta, tipo: 'brote', de: 0.05, dur: 0.08, estilo: '--origen: 29% 35.8%' },
+	{ src: cabezaAzul, tipo: 'brote', de: 0.19, dur: 0.08, estilo: '--origen: 34.8% 69.4%' },
+	{ src: cuerpoNaranja, tipo: 'barrido', de: 0.38, dur: 0.2, estilo: '--desde: 265deg; --giro: 170deg' },
+	{ src: cabezaNaranja, tipo: 'brote', de: 0.47, dur: 0.08, estilo: '--origen: 43.6% 12.6%' },
+	{ src: cuerpoVerde, tipo: 'barrido', de: 0.56, dur: 0.18, estilo: '--desde: 5deg; --giro: 112deg' },
+	{ src: cabezaVerde, tipo: 'brote', de: 0.67, dur: 0.08, estilo: '--origen: 85.5% 43.1%' },
+	{ src: pelota, tipo: 'brote', de: 0.74, dur: 0.1, estilo: '--origen: 78.9% 62.7%' },
+	{ src: rayos, tipo: 'brote', de: 0.84, dur: 0.14, estilo: '--origen: 66.8% 34.5%' },
+];
 
 // Datos de contacto: la sección solo se muestra cuando hay al menos uno.
 // WhatsApp va con código de país y solo dígitos, por ejemplo '51987654321'.
@@ -143,22 +167,40 @@ const sostenibilidad = [
 		</header>
 
 		<main>
-			<section id="inicio" class="hero">
-				<div>
-					<p class="etiqueta">Tambogrande, Piura</p>
-					<h1>Elegir también es una <em>oportunidad</em></h1>
-					<p class="bajada">
-						Usamos el arte y la cultura para que los adolescentes encuentren nuevas formas de participar.
-					</p>
-					<a class="boton" href="#mateo">Conoce la historia de Mateo</a>
-				</div>
-				<div
-					class="hero-logo"
-					role="img"
-					aria-label="COLAB Cultural. El arte y la cultura transforman. La comunidad nos une."
-				>
-					<Image class="gira" src={isotipo} alt="" width={300} height={300} loading="eager" />
-					<Image src={marca} alt="" width={420} height={197} loading="eager" />
+			<section id="inicio" class="escena">
+				<div class="hero">
+					<div>
+						<p class="etiqueta">Tambogrande, Piura</p>
+						<h1>Elegir también es una <em>oportunidad</em></h1>
+						<p class="bajada">
+							Usamos el arte y la cultura para que los adolescentes encuentren nuevas formas de participar.
+						</p>
+						<a class="boton" href="#mateo">Conoce la historia de Mateo</a>
+						<p class="pista-scroll" aria-hidden="true">Desliza y mira cómo se pinta el logo ↓</p>
+					</div>
+					<div
+						class="hero-logo"
+						role="img"
+						aria-label="COLAB Cultural. El arte y la cultura transforman. La comunidad nos une."
+					>
+						<div class="iso gira">
+							<Image class="boceto" src={isotipo} alt="" width={640} height={640} loading="eager" />
+							{
+								capas.map((capa) => (
+									<Image
+										class:list={['capa', capa.tipo]}
+										style={`--de: ${capa.de}; --dur: ${capa.dur}; ${capa.estilo}`}
+										src={capa.src}
+										alt=""
+										width={640}
+										height={640}
+										loading="eager"
+									/>
+								))
+							}
+						</div>
+						<Image src={marca} alt="" width={420} height={197} loading="eager" />
+					</div>
 				</div>
 			</section>
 
@@ -506,9 +548,15 @@ const sostenibilidad = [
 			document.querySelectorAll('main section[id]').forEach((seccion) => alLeer.observe(seccion));
 
 			const avance = document.querySelector('.avance');
+			const escena = document.querySelector('.escena');
 			const medir = () => {
 				const total = document.documentElement.scrollHeight - innerHeight;
 				avance.style.setProperty('--avance', total > 0 ? Math.min(scrollY / total, 1) : 0);
+				if (quieto) return;
+				// El isotipo termina de pintarse un poco antes de que el inicio se suelte
+				const caja = escena.getBoundingClientRect();
+				const recorrido = (caja.height - innerHeight) * 0.85;
+				escena.style.setProperty('--p', recorrido > 0 ? Math.min(Math.max(-caja.top / recorrido, 0), 1) : 1);
 			};
 			addEventListener('scroll', medir, { passive: true });
 			addEventListener('resize', medir);
@@ -746,9 +794,76 @@ const sostenibilidad = [
 		align-items: center;
 		gap: 8px;
 	}
-	.gira {
+	/* El inicio queda fijo mientras el scroll pinta el isotipo pieza por pieza */
+	.escena {
+		padding: 0;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.js .escena {
+			height: calc(100svh + 100vh);
+		}
+		.js .hero {
+			position: sticky;
+			top: 65px;
+			min-height: calc(100svh - 65px);
+			align-content: center;
+		}
+		.js .pista-scroll {
+			display: block;
+		}
+	}
+	.pista-scroll {
+		display: none;
+		margin: 20px 0 0;
+		font-size: 0.9rem;
+		font-weight: 600;
+		opacity: calc(0.7 - var(--p, 1) * 6);
+	}
+	.iso {
+		position: relative;
 		width: 62%;
-		border-radius: 50%;
+		aspect-ratio: 1;
+	}
+	.iso img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+	.boceto {
+		opacity: 0.1;
+		filter: grayscale(1);
+	}
+	.capa {
+		--t: clamp(0, calc((var(--p, 1) - var(--de)) / var(--dur)), 1);
+	}
+	.brote {
+		transform-origin: var(--origen);
+		scale: var(--t);
+		opacity: calc(var(--t) * 4);
+	}
+	.barrido {
+		--mascara: conic-gradient(
+			from var(--desde) at 53.6% 52%,
+			#000 calc(var(--t) * (var(--giro) + 6deg) - 6deg),
+			transparent calc(var(--t) * (var(--giro) + 6deg))
+		);
+		-webkit-mask-image: var(--mascara);
+		mask-image: var(--mascara);
+	}
+	.barrido-inverso {
+		--mascara: conic-gradient(
+			from var(--desde) at 53.6% 52%,
+			transparent calc((1 - var(--t)) * (var(--giro) + 6deg) - 6deg),
+			#000 calc((1 - var(--t)) * (var(--giro) + 6deg)),
+			#000 var(--giro),
+			transparent var(--giro)
+		);
+		-webkit-mask-image: var(--mascara);
+		mask-image: var(--mascara);
+	}
+	.gira {
+		transform-origin: 53.6% 52%;
 		animation: girar 80s linear infinite;
 	}
 	@keyframes girar {
@@ -773,6 +888,7 @@ const sostenibilidad = [
 	.hero {
 		max-width: 1080px;
 		margin: 0 auto;
+		padding: 72px 20px;
 		display: grid;
 		grid-template-columns: 1.2fr 1fr;
 		align-items: center;
@@ -1613,10 +1729,17 @@ const sostenibilidad = [
 		.tarjetas {
 			grid-template-columns: 1fr;
 		}
+		.hero {
+			padding: 32px 16px;
+			gap: 20px;
+		}
 		.hero-logo {
 			order: -1;
-			max-width: 260px;
+			width: min(260px, 34svh);
 			margin: 0 auto;
+		}
+		.iso {
+			width: 80%;
 		}
 		.historia {
 			display: block;
