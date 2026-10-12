@@ -1,16 +1,758 @@
 ---
+import { Image } from 'astro:assets';
+import isotipo from '../assets/isotipo.png';
+import logo from '../assets/logo-colab-cultural.png';
+import QRCode from 'qrcode';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const demoUrl = new URL(`${base}/demo/`, Astro.site).href;
+const demoQr = await QRCode.toString(demoUrl, { type: 'svg', margin: 1, color: { dark: '#0b1530' } });
+
+const etapas = [
+	{ nombre: 'Diagnóstico', texto: 'Escuchamos a estudiantes, familias y docentes para entender su realidad.' },
+	{ nombre: 'Laboratorios', texto: 'Espacios de cine, deporte y muralismo donde los adolescentes crean y deciden.' },
+	{ nombre: 'Festival', texto: 'La comunidad se reúne para ver, celebrar y hacer suyo lo creado.' },
+];
+
+const aliados = [
+	'I.E. 14144 Santa Rosa',
+	'Fe y Alegría 48',
+	'Municipalidad de Tambogrande',
+	'APAFA',
+	'UGEL',
+	'Cumbeque Producciones',
+	'Club de Arte y Cultura',
+	'Dijkstraidos',
+];
+
+const sostenibilidad = [
+	{
+		titulo: 'Núcleo juvenil',
+		texto: 'Líderes estudiantiles que seguirán organizando actividades culturales, acompañados por una red de docentes, artistas, organizaciones y emprendimientos.',
+	},
+	{
+		titulo: 'APAFA, compromiso constante',
+		texto: 'Reuniones quincenales con mapeo de padres de familia y métricas de evaluación sobre cine, deporte y muralismo.',
+	},
+	{
+		titulo: 'Comité de soporte',
+		texto: 'Padres de familia, psicólogo(a), estudiantes y especialistas: personas de confianza para prevenir y reforzar lo aprendido.',
+	},
+];
 ---
 
-<html lang="en">
+<html lang="es">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+		<link rel="icon" href={`${base}/favicon.ico`} />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<meta
+			name="description"
+			content="COLAB Cultural: arte y cultura para prevenir el consumo de alcohol y tabaco en adolescentes de Tambogrande, Piura."
+		/>
+		<title>COLAB Cultural — El arte y la cultura transforman</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Nunito:wght@400;600;800&display=swap"
+			rel="stylesheet"
+		/>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<header class="barra">
+			<a class="marca" href="#inicio">
+				<Image src={isotipo} alt="" width={44} height={44} />
+				<span>COLAB <small>Cultural</small></span>
+			</a>
+			<nav aria-label="Secciones">
+				<a href="#impacto">Impacto</a>
+				<a href="#proceso">Proceso</a>
+				<a href="#innovacion">Innovación</a>
+				<a href="#aliados">Aliados</a>
+			</nav>
+		</header>
+
+		<main>
+			<section id="inicio" class="hero">
+				<div>
+					<p class="etiqueta">Tambogrande, Piura</p>
+					<h1>Elegir también es una <em>oportunidad</em></h1>
+					<p class="bajada">
+						Mateo podría ser el protagonista de su propia historia y no una cifra más. Usamos el arte y la
+						cultura para que los adolescentes encuentren nuevas formas de participar.
+					</p>
+					<a class="boton" href="#innovacion">Conoce los murales con realidad aumentada</a>
+				</div>
+				<Image
+					class="hero-logo"
+					src={logo}
+					alt="COLAB Cultural. El arte y la cultura transforman. La comunidad nos une."
+					width={520}
+					height={520}
+					loading="eager"
+				/>
+			</section>
+
+			<section id="impacto" class="impacto">
+				<div class="cifra">
+					<strong>38.8%</strong>
+					<p>de escolares de secundaria en Perú ha consumido alcohol o tabaco alguna vez.</p>
+					<cite>DEVIDA, 2024</cite>
+				</div>
+				<div class="impacto-texto">
+					<h2>Impacto social</h2>
+					<blockquote>
+						“No queremos solo realizar actividades. Queremos generar nuevas oportunidades de participación”.
+					</blockquote>
+					<ul class="metas">
+						<li><strong>45</strong> estudiantes de la I.E. 14144 Santa Rosa</li>
+						<li><strong>80% ↑</strong> habilidades de prevención</li>
+						<li><strong>70% ↑</strong> participación comunitaria</li>
+					</ul>
+				</div>
+			</section>
+
+			<section id="proceso" class="contenedor">
+				<h2>Un proceso en 3 etapas</h2>
+				<ol class="etapas">
+					{
+						etapas.map((etapa, i) => (
+							<li>
+								<span class="numero">{i + 1}</span>
+								<h3>{etapa.nombre}</h3>
+								<p>{etapa.texto}</p>
+							</li>
+						))
+					}
+				</ol>
+			</section>
+
+			<section id="innovacion" class="innovacion">
+				<div class="contenedor">
+					<p class="etiqueta">Innovación</p>
+					<h2>Murales con realidad aumentada</h2>
+					<p class="bajada">
+						Los estudiantes pintan el mural y lo digitalizan. Después, cualquier persona puede escanearlo con
+						la app y descubrir lo que guarda. Lo desarrollamos junto a nuestro aliado <strong>Dijkstraidos</strong>.
+					</p>
+
+					<ol class="pasos">
+						<li><span>1</span> Pinta y digitaliza</li>
+						<li><span>2</span> Escanea con la app</li>
+					</ol>
+
+					<div class="opciones">
+						<article>
+							<div class="demo demo-ar" aria-hidden="true">
+								<div class="mural"></div>
+								<div class="telefono">
+									<div class="pantalla">
+										<i></i><i></i><i></i>
+										<b>Cuídate y cuida a tu comunidad</b>
+									</div>
+								</div>
+							</div>
+							<p class="opcion">Opción 1</p>
+							<h3>Murales interactivos</h3>
+							<p>Al apuntar la cámara, el mural se anima o muestra mensajes de prevención.</p>
+						</article>
+						<article>
+							<div class="demo demo-video" aria-hidden="true">
+								<div class="mural"></div>
+								<div class="telefono">
+									<div class="pantalla">
+										<u></u>
+										<b>Documental colaborativo</b>
+									</div>
+								</div>
+							</div>
+							<p class="opcion">Opción 2</p>
+							<h3>Cruce de laboratorios</h3>
+							<p>
+								El mural funciona como marcador para reproducir fragmentos del documental que graban los
+								chicos.
+							</p>
+						</article>
+					</div>
+
+					<div class="prueba">
+						<div class="prueba-texto">
+							<p class="etiqueta">Demo</p>
+							<h3>Pruébalo ahora</h3>
+							<ol>
+								<li>Escanea el código QR con tu celular.</li>
+								<li>Abre la cámara y apunta a este mural.</li>
+								<li>Cambia entre el mural interactivo y el documental.</li>
+							</ol>
+							<div class="qr" set:html={demoQr} role="img" aria-label="Código QR de la demo" />
+							<a class="boton" href={`${base}/demo/`}>Abrir la demo en este dispositivo</a>
+							<p class="aviso">Mural y video de prueba, hasta tener los que creen los estudiantes.</p>
+						</div>
+						<img
+							src={`${base}/demo/mural.png`}
+							alt="Mural de prueba: jóvenes tomados de la mano frente a cerros, un río, un árbol de mango, una pelota y una claqueta de cine."
+							width="1200"
+							height="900"
+							loading="lazy"
+						/>
+					</div>
+				</div>
+			</section>
+
+			<section id="aliados" class="contenedor">
+				<h2>Aliados clave</h2>
+				<ul class="aliados">
+					{aliados.map((aliado) => <li>{aliado}</li>)}
+				</ul>
+			</section>
+
+			<section class="contenedor">
+				<h2>Sostenibilidad y durabilidad</h2>
+				<div class="tarjetas">
+					{
+						sostenibilidad.map((item) => (
+							<article>
+								<h3>{item.titulo}</h3>
+								<p>{item.texto}</p>
+							</article>
+						))
+					}
+				</div>
+				<p class="nota">
+					Institucionalización como Asociación Civil y alianzas de ingresos: RSE, gobierno y fondos
+					concursables.
+				</p>
+			</section>
+
+			<section class="cierre">
+				<p>El futuro de los adolescentes de Tambogrande depende de la decisión que tomemos hoy.</p>
+			</section>
+		</main>
+
+		<footer>
+			<Image src={isotipo} alt="" width={36} height={36} />
+			<p>COLAB Cultural · El arte y la cultura transforman. La comunidad nos une.</p>
+		</footer>
 	</body>
 </html>
+
+<style is:global>
+	:root {
+		--marino: #0b1530;
+		--morado: #663f8f;
+		--magenta: #c2187a;
+		--naranja: #f77f00;
+		--verde: #4fa85a;
+		--azul: #0b5fb0;
+		--crema: #fff6ec;
+		--lila: #f1ecf7;
+	}
+	* {
+		box-sizing: border-box;
+	}
+	html {
+		scroll-behavior: smooth;
+		scroll-padding-top: 76px;
+	}
+	body {
+		margin: 0;
+		font-family: 'Nunito', system-ui, sans-serif;
+		font-size: 1.0625rem;
+		line-height: 1.6;
+		color: var(--marino);
+		background: #fff;
+	}
+	h1,
+	h2,
+	h3 {
+		font-family: 'Bree Serif', Georgia, serif;
+		font-weight: 400;
+		line-height: 1.15;
+		margin: 0 0 0.5em;
+	}
+	h1 {
+		font-size: clamp(2.4rem, 6vw, 4.2rem);
+	}
+	h2 {
+		font-size: clamp(1.8rem, 4vw, 2.6rem);
+	}
+	h3 {
+		font-size: 1.35rem;
+	}
+	h1 em {
+		font-style: normal;
+		color: var(--morado);
+	}
+	p {
+		margin: 0 0 1em;
+	}
+	img {
+		max-width: 100%;
+		height: auto;
+	}
+	section {
+		padding: 72px 20px;
+	}
+	.contenedor,
+	.innovacion > .contenedor {
+		max-width: 1080px;
+		margin: 0 auto;
+	}
+	.innovacion > .contenedor {
+		padding: 0;
+	}
+	.etiqueta {
+		font-weight: 800;
+		font-size: 0.8rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--magenta);
+		margin-bottom: 0.75em;
+	}
+	.bajada {
+		font-size: 1.15rem;
+		max-width: 46ch;
+	}
+
+	.barra {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 10px 20px;
+		background: rgb(255 255 255 / 0.92);
+		backdrop-filter: blur(8px);
+		border-bottom: 1px solid #ece7f2;
+	}
+	.marca {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-weight: 800;
+		font-size: 1.2rem;
+		color: var(--marino);
+		text-decoration: none;
+	}
+	.marca small {
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		font-size: 0.65rem;
+	}
+	.barra nav {
+		display: flex;
+		gap: 20px;
+	}
+	.barra nav a {
+		color: var(--marino);
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.barra nav a:hover {
+		color: var(--morado);
+	}
+
+	.hero {
+		max-width: 1080px;
+		margin: 0 auto;
+		display: grid;
+		grid-template-columns: 1.2fr 1fr;
+		align-items: center;
+		gap: 32px;
+	}
+	.boton {
+		display: inline-block;
+		margin-top: 8px;
+		padding: 14px 24px;
+		border-radius: 999px;
+		background: var(--morado);
+		color: #fff;
+		font-weight: 800;
+		text-decoration: none;
+	}
+	.boton:hover {
+		background: var(--marino);
+	}
+
+	.impacto {
+		display: grid;
+		grid-template-columns: minmax(0, 420px) minmax(0, 600px);
+		justify-content: center;
+		align-items: center;
+		gap: 48px;
+		background: var(--crema);
+	}
+	.cifra {
+		background: var(--morado);
+		color: #fff;
+		padding: 36px;
+		border-radius: 24px;
+	}
+	.cifra strong {
+		display: block;
+		font-family: 'Bree Serif', Georgia, serif;
+		font-weight: 400;
+		font-size: clamp(3.5rem, 9vw, 5.5rem);
+		line-height: 1;
+		margin-bottom: 12px;
+	}
+	.cifra cite {
+		font-style: normal;
+		font-size: 0.85rem;
+		opacity: 0.8;
+	}
+	blockquote {
+		margin: 0 0 24px;
+		padding-left: 16px;
+		border-left: 4px solid var(--naranja);
+		font-size: 1.2rem;
+	}
+	.metas {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 10px;
+	}
+	.metas strong {
+		display: inline-block;
+		min-width: 4.5ch;
+		font-family: 'Bree Serif', Georgia, serif;
+		font-weight: 400;
+		font-size: 1.5rem;
+		color: var(--morado);
+	}
+
+	.etapas {
+		list-style: none;
+		padding: 0;
+		margin: 32px 0 0;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 24px;
+	}
+	.etapas li {
+		padding: 24px;
+		border-radius: 20px;
+		border: 2px solid var(--lila);
+	}
+	.numero {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		margin-bottom: 16px;
+		border-radius: 50%;
+		color: #fff;
+		font-weight: 800;
+		background: var(--naranja);
+	}
+	.etapas li:nth-child(2) .numero {
+		background: var(--magenta);
+	}
+	.etapas li:nth-child(3) .numero {
+		background: var(--verde);
+	}
+
+	.innovacion {
+		background: var(--marino);
+		color: #fff;
+	}
+	.innovacion .etiqueta {
+		color: #ffb35c;
+	}
+	.innovacion .bajada {
+		max-width: 60ch;
+	}
+	.pasos {
+		list-style: none;
+		padding: 0;
+		margin: 28px 0 40px;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+	.pasos li {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 20px 8px 8px;
+		border-radius: 999px;
+		border: 2px solid rgb(255 255 255 / 0.3);
+		font-weight: 800;
+	}
+	.pasos span {
+		display: grid;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		background: #fff;
+		color: var(--marino);
+	}
+	.opciones {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 24px;
+	}
+	.opciones article {
+		padding: 24px;
+		border-radius: 24px;
+		background: #fff;
+		color: var(--marino);
+	}
+	.opcion {
+		margin: 20px 0 4px;
+		font-weight: 800;
+		font-size: 0.8rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--magenta);
+	}
+	.opciones article p:last-child {
+		margin: 0;
+	}
+
+	.prueba {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+		align-items: center;
+		gap: 32px;
+		margin-top: 24px;
+		padding: 24px;
+		border-radius: 24px;
+		border: 2px solid rgb(255 255 255 / 0.3);
+	}
+	.prueba ol {
+		margin: 0 0 20px;
+		padding-left: 1.2em;
+	}
+	.prueba img {
+		border-radius: 12px;
+	}
+	.qr {
+		width: 150px;
+		padding: 8px;
+		border-radius: 12px;
+		background: #fff;
+		line-height: 0;
+	}
+	.prueba .boton {
+		margin-top: 16px;
+		background: var(--naranja);
+		color: var(--marino);
+	}
+	.prueba .boton:hover {
+		background: #fff;
+	}
+	.aviso {
+		margin: 16px 0 0;
+		font-size: 0.9rem;
+		opacity: 0.75;
+	}
+
+	/* Mini ilustración: un teléfono escaneando el mural */
+	.demo {
+		position: relative;
+		height: 220px;
+		border-radius: 16px;
+		overflow: hidden;
+		background: var(--lila);
+	}
+	.mural {
+		position: absolute;
+		inset: 28px 28px 28px 28px;
+		border-radius: 8px;
+		background:
+			radial-gradient(circle at 18% 70%, var(--naranja) 0 16%, transparent 17%),
+			radial-gradient(circle at 46% 38%, var(--magenta) 0 20%, transparent 21%),
+			radial-gradient(circle at 78% 66%, var(--verde) 0 18%, transparent 19%),
+			linear-gradient(135deg, #ffd9a8, #c9e4ff);
+	}
+	.demo-video .mural {
+		background:
+			radial-gradient(circle at 24% 40%, var(--azul) 0 18%, transparent 19%),
+			radial-gradient(circle at 60% 68%, var(--morado) 0 20%, transparent 21%),
+			radial-gradient(circle at 82% 30%, var(--naranja) 0 14%, transparent 15%),
+			linear-gradient(135deg, #d8f0d8, #ffe1ef);
+	}
+	.telefono {
+		position: absolute;
+		right: 12%;
+		bottom: -14px;
+		width: 118px;
+		height: 200px;
+		padding: 8px;
+		border-radius: 20px;
+		background: var(--marino);
+		transform: rotate(-6deg);
+		box-shadow: 0 12px 24px rgb(11 21 48 / 0.35);
+	}
+	.pantalla {
+		position: relative;
+		height: 100%;
+		border-radius: 13px;
+		overflow: hidden;
+		background: linear-gradient(160deg, #ffe7c7, #d6ebff);
+	}
+	.pantalla b {
+		position: absolute;
+		left: 6px;
+		right: 6px;
+		bottom: 8px;
+		padding: 6px;
+		border-radius: 8px;
+		background: #fff;
+		font-size: 0.6rem;
+		line-height: 1.2;
+		text-align: center;
+	}
+	.pantalla i {
+		position: absolute;
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
+		animation: flotar 3s ease-in-out infinite;
+	}
+	.pantalla i:nth-child(1) {
+		left: 12px;
+		top: 30px;
+		background: var(--naranja);
+	}
+	.pantalla i:nth-child(2) {
+		left: 42px;
+		top: 62px;
+		background: var(--magenta);
+		animation-delay: -1s;
+	}
+	.pantalla i:nth-child(3) {
+		left: 66px;
+		top: 24px;
+		background: var(--verde);
+		animation-delay: -2s;
+	}
+	.pantalla u {
+		position: absolute;
+		left: 50%;
+		top: 38%;
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		background: #e02424;
+		transform: translate(-50%, -50%);
+	}
+	.pantalla u::after {
+		content: '';
+		position: absolute;
+		left: 17px;
+		top: 12px;
+		border-left: 16px solid #fff;
+		border-top: 10px solid transparent;
+		border-bottom: 10px solid transparent;
+	}
+	@keyframes flotar {
+		50% {
+			transform: translateY(-10px) scale(1.12);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.pantalla i {
+			animation: none;
+		}
+		html {
+			scroll-behavior: auto;
+		}
+	}
+
+	.aliados {
+		list-style: none;
+		padding: 0;
+		margin: 24px 0 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+	.aliados li {
+		padding: 10px 20px;
+		border-radius: 999px;
+		background: var(--lila);
+		font-weight: 600;
+	}
+
+	.tarjetas {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 24px;
+		margin-top: 32px;
+	}
+	.tarjetas article {
+		padding: 24px;
+		border-radius: 20px;
+		background: var(--crema);
+	}
+	.tarjetas p {
+		margin: 0;
+	}
+	.nota {
+		margin: 24px 0 0;
+		padding: 16px 20px;
+		border-radius: 16px;
+		background: var(--lila);
+		font-weight: 600;
+	}
+
+	.cierre {
+		background: linear-gradient(120deg, var(--magenta), var(--morado) 55%, var(--azul));
+		color: #fff;
+		text-align: center;
+	}
+	.cierre p {
+		max-width: 22ch;
+		margin: 0 auto;
+		font-family: 'Bree Serif', Georgia, serif;
+		font-size: clamp(1.8rem, 4.5vw, 3rem);
+		line-height: 1.2;
+	}
+
+	footer {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		padding: 24px 20px;
+		font-size: 0.9rem;
+	}
+	footer p {
+		margin: 0;
+	}
+
+	@media (max-width: 760px) {
+		section {
+			padding: 56px 16px;
+		}
+		.barra nav {
+			display: none;
+		}
+		.hero,
+		.impacto,
+		.etapas,
+		.opciones,
+		.prueba,
+		.tarjetas {
+			grid-template-columns: 1fr;
+		}
+		.hero-logo {
+			order: -1;
+			max-width: 260px;
+			margin: 0 auto;
+		}
+		.impacto {
+			gap: 32px;
+		}
+	}
+</style>

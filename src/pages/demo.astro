@@ -1,0 +1,320 @@
+---
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<title>Demo: mural con realidad aumentada — COLAB Cultural</title>
+		<script is:inline src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+		<script is:inline src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+	</head>
+	<body>
+		<div id="inicio" class="capa">
+			<p class="etiqueta">Demo · COLAB Cultural</p>
+			<h1>Mural con realidad aumentada</h1>
+			<ol>
+				<li>Ten el mural a la vista, impreso o en otra pantalla.</li>
+				<li>Abre la cámara y dale permiso al navegador.</li>
+				<li>Apunta al mural y elige qué quieres ver.</li>
+			</ol>
+			<button id="comenzar" type="button">Abrir cámara</button>
+			<a href={`${base}/demo/mural.png`}>Ver el mural</a>
+			<a href={`${base}/#innovacion`}>Volver a la página</a>
+			<p id="error" role="alert" hidden></p>
+		</div>
+
+		<div id="controles" hidden>
+			<p id="pista">Apunta la cámara al mural</p>
+			<div class="modos" role="group" aria-label="Qué mostrar sobre el mural">
+				<button type="button" data-modo="ar" aria-pressed="true">Mural interactivo</button>
+				<button type="button" data-modo="video" aria-pressed="false">Documental</button>
+			</div>
+		</div>
+
+		<a-scene
+			id="escena"
+			mindar-image={`imageTargetSrc: ${base}/demo/targets.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.0005; filterBeta: 0.01; missTolerance: 10`}
+			color-space="sRGB"
+			renderer="colorManagement: true"
+			vr-mode-ui="enabled: false"
+			xr-mode-ui="enabled: false"
+			device-orientation-permission-ui="enabled: false"
+		>
+			<a-assets>
+				<video
+					id="documental"
+					src={`${base}/demo/documental-prueba.mp4`}
+					preload="auto"
+					loop
+					playsinline
+					webkit-playsinline></video>
+			</a-assets>
+
+			<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+			<!-- El mural mide 1 de ancho por 0.75 de alto, con el origen en su centro -->
+			<a-entity id="mural" mindar-image-target="targetIndex: 0">
+				<a-entity id="modo-ar">
+					<a-ring
+						position="0.275 0.217 0.02"
+						radius-inner="0.1"
+						radius-outer="0.12"
+						material="shader: flat; color: #ffc21a; transparent: true; opacity: 0.85"
+						animation="property: scale; from: 1 1 1; to: 1.7 1.7 1; dur: 1100; dir: alternate; loop: true; easing: easeInOutSine"
+					></a-ring>
+					<a-circle
+						position="0.275 0.217 0.05"
+						radius="0.06"
+						material="shader: flat; color: #f77f00"
+						animation="property: position; to: 0.275 0.217 0.16; dur: 1100; dir: alternate; loop: true; easing: easeInOutSine"
+					></a-circle>
+					<a-sphere
+						position="-0.15 -0.296 0.045"
+						radius="0.045"
+						material="shader: flat; color: #ffffff"
+						animation="property: position; to: -0.15 -0.05 0.045; dur: 520; dir: alternate; loop: true; easing: easeOutQuad"
+					></a-sphere>
+					<a-sphere
+						position="-0.321 0.046 0.03"
+						radius="0.02"
+						material="shader: flat; color: #f77f00"
+						animation="property: scale; to: 1.9 1.9 1.9; dur: 700; dir: alternate; loop: true"
+					></a-sphere>
+					<a-sphere
+						position="-0.221 0.046 0.03"
+						radius="0.02"
+						material="shader: flat; color: #ffc21a"
+						animation="property: scale; to: 1.9 1.9 1.9; dur: 700; delay: 250; dir: alternate; loop: true"
+					></a-sphere>
+					<a-sphere
+						position="-0.2875 -0.004 0.03"
+						radius="0.02"
+						material="shader: flat; color: #f77f00"
+						animation="property: scale; to: 1.9 1.9 1.9; dur: 700; delay: 500; dir: alternate; loop: true"
+					></a-sphere>
+					<a-circle
+						position="-0.4 0.3 0.02"
+						radius="0.022"
+						material="shader: flat; color: #c2187a"
+						animation="property: position; to: -0.4 0.3 0.3; dur: 1600; dir: alternate; loop: true; easing: easeInOutSine"
+					></a-circle>
+					<a-circle
+						position="-0.05 0.27 0.02"
+						radius="0.018"
+						material="shader: flat; color: #59b8e6"
+						animation="property: position; to: -0.05 0.27 0.26; dur: 1900; dir: alternate; loop: true; easing: easeInOutSine"
+					></a-circle>
+					<a-circle
+						position="0.44 -0.02 0.02"
+						radius="0.02"
+						material="shader: flat; color: #4fa85a"
+						animation="property: position; to: 0.44 -0.02 0.28; dur: 1400; dir: alternate; loop: true; easing: easeInOutSine"
+					></a-circle>
+					<a-image
+						id="cartel"
+						position="0 0.43 0.1"
+						width="0.9"
+						height="0.225"
+						material="shader: flat; transparent: true"
+						animation="property: position; to: 0 0.46 0.14; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine"
+					></a-image>
+				</a-entity>
+
+				<a-entity id="modo-video" visible="false">
+					<a-video src="#documental" width="1" height="0.75" position="0 0 0.01"></a-video>
+				</a-entity>
+			</a-entity>
+		</a-scene>
+
+		<script is:inline>
+			const escena = document.querySelector('#escena');
+			const mural = document.querySelector('#mural');
+			const video = document.querySelector('#documental');
+			const pista = document.querySelector('#pista');
+			const error = document.querySelector('#error');
+			let modo = 'ar';
+			let visible = false;
+
+			// El cartel se dibuja aquí para que las tildes se vean bien en cualquier celular
+			const lienzo = document.createElement('canvas');
+			lienzo.width = 1024;
+			lienzo.height = 256;
+			const g = lienzo.getContext('2d');
+			g.fillStyle = '#663f8f';
+			g.beginPath();
+			g.roundRect(8, 8, 1008, 240, 60);
+			g.fill();
+			g.lineWidth = 10;
+			g.strokeStyle = '#ffffff';
+			g.stroke();
+			g.fillStyle = '#ffffff';
+			g.textAlign = 'center';
+			g.textBaseline = 'middle';
+			g.font = '800 64px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+			g.fillText('Cuídate y cuida a tu comunidad', 512, 132);
+			document.querySelector('#cartel').setAttribute('src', lienzo.toDataURL());
+
+			function actualizar() {
+				document.querySelector('#modo-ar').setAttribute('visible', modo === 'ar');
+				document.querySelector('#modo-video').setAttribute('visible', modo === 'video');
+				if (modo === 'video' && visible) video.play();
+				else video.pause();
+				pista.hidden = visible;
+			}
+
+			mural.addEventListener('targetFound', () => {
+				visible = true;
+				actualizar();
+			});
+			mural.addEventListener('targetLost', () => {
+				visible = false;
+				actualizar();
+			});
+
+			document.querySelectorAll('[data-modo]').forEach((boton) => {
+				boton.addEventListener('click', () => {
+					modo = boton.dataset.modo;
+					document
+						.querySelectorAll('[data-modo]')
+						.forEach((b) => b.setAttribute('aria-pressed', String(b === boton)));
+					actualizar();
+				});
+			});
+
+			function fallo() {
+				document.querySelector('#controles').hidden = true;
+				document.querySelector('#inicio').hidden = false;
+				error.hidden = false;
+				error.textContent =
+					'No se pudo abrir la cámara. Revisa el permiso del navegador y que la página esté en https.';
+			}
+			escena.addEventListener('arError', fallo);
+
+			document.querySelector('#comenzar').addEventListener('click', () => {
+				// En iPhone el video solo puede sonar si se activó con un toque
+				video
+					.play()
+					.then(() => video.pause())
+					.catch(() => {});
+				const iniciar = () => {
+					document.querySelector('#inicio').hidden = true;
+					document.querySelector('#controles').hidden = false;
+					error.hidden = true;
+					try {
+						escena.systems['mindar-image-system'].start();
+					} catch {
+						fallo();
+					}
+				};
+				if (escena.hasLoaded) iniciar();
+				else escena.addEventListener('loaded', iniciar, { once: true });
+			});
+		</script>
+	</body>
+</html>
+
+<style is:global>
+	html,
+	body {
+		margin: 0;
+		height: 100%;
+		overflow: hidden;
+		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+		color: #fff;
+		background: #0b1530;
+	}
+	[hidden] {
+		display: none !important;
+	}
+	.capa {
+		position: fixed;
+		inset: 0;
+		z-index: 20;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 14px;
+		padding: 24px;
+		max-width: 520px;
+		margin: 0 auto;
+		background: #0b1530;
+	}
+	.etiqueta {
+		margin: 0;
+		font-weight: 800;
+		font-size: 0.8rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: #ffb35c;
+	}
+	h1 {
+		margin: 0;
+		font-size: 2rem;
+		line-height: 1.15;
+	}
+	ol {
+		margin: 0;
+		padding-left: 1.2em;
+		line-height: 1.6;
+	}
+	.capa a {
+		color: #fff;
+	}
+	button {
+		font: inherit;
+		font-weight: 800;
+		border: 0;
+		border-radius: 999px;
+		cursor: pointer;
+	}
+	#comenzar {
+		padding: 16px 28px;
+		font-size: 1.1rem;
+		background: #f77f00;
+		color: #0b1530;
+	}
+	#error {
+		margin: 0;
+		padding: 12px 16px;
+		border-radius: 12px;
+		background: #7a1230;
+	}
+	#controles {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 10;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 12px;
+		padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+	}
+	#pista {
+		margin: 0;
+		padding: 8px 16px;
+		border-radius: 999px;
+		background: rgb(11 21 48 / 0.8);
+	}
+	.modos {
+		display: flex;
+		gap: 6px;
+		padding: 6px;
+		border-radius: 999px;
+		background: rgb(11 21 48 / 0.8);
+	}
+	.modos button {
+		padding: 12px 18px;
+		background: transparent;
+		color: #fff;
+	}
+	.modos button[aria-pressed='true'] {
+		background: #fff;
+		color: #0b1530;
+	}
+</style>
