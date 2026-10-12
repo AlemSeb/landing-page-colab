@@ -1,0 +1,859 @@
+---
+import { Image } from 'astro:assets';
+import isotipo from '../assets/isotipo.png';
+import QRCode from 'qrcode';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const camara = `${base}/escanear/`;
+const qr = await QRCode.toString(new URL(camara, Astro.site).href, {
+	type: 'svg',
+	margin: 1,
+	color: { dark: '#0b1530' },
+});
+
+// Obras de la sala, en el orden del recorrido: pared izquierda, fondo y pared derecha.
+// escanear: true muestra el QR (solo las obras que la cámara reconoce); video: se reproduce en su marco.
+const obras = [
+	{
+		tipo: 'Mural con realidad aumentada',
+		titulo: 'Juntos en el valle',
+		texto: 'Apunta la cámara al mural y cobra vida: se anima, muestra mensajes de prevención o reproduce el documental.',
+		imagen: `${base}/demo/mural.png`,
+		alt: 'Jóvenes tomados de la mano frente a cerros, un río, un árbol de mango, una pelota y una claqueta de cine.',
+		escanear: true,
+	},
+	{
+		tipo: 'Laboratorio de deporte',
+		titulo: 'La cancha del barrio',
+		texto: 'El deporte como espacio de encuentro y trabajo en equipo.',
+		imagen: `${base}/galeria/mural-cancha.svg`,
+		alt: 'Cuatro jóvenes juegan fútbol en una cancha entre dos arcos, con cerros y sol al fondo.',
+	},
+	{
+		tipo: 'Laboratorio de cine',
+		titulo: 'Luces, cámara, barrio',
+		texto: 'Los estudiantes graban su propia historia: una pantalla al aire libre, la cámara y la claqueta.',
+		imagen: `${base}/galeria/mural-rodaje.svg`,
+		alt: 'Tres jóvenes frente a una pantalla de cine al aire libre, con una cámara y una claqueta, bajo un cielo estrellado.',
+	},
+	{
+		tipo: 'Documental',
+		titulo: 'Nuestras historias',
+		texto: 'Un fragmento de muestra. Aquí se verá el documental colaborativo que graben los estudiantes.',
+		video: `${base}/demo/documental-prueba.mp4`,
+	},
+	{
+		tipo: 'Laboratorio de muralismo',
+		titulo: 'Manos que pintan',
+		texto: 'Cada estudiante deja su trazo: el mural se hace entre todos.',
+		imagen: `${base}/galeria/mural-manos.svg`,
+		alt: 'Cuatro manos sostienen brochas sobre franjas de colores, junto a latas de pintura.',
+	},
+	{
+		tipo: 'Tambogrande',
+		titulo: 'Tierra de mangos',
+		texto: 'El valle, el río y los árboles de mango: el lugar donde crecen estas historias.',
+		imagen: `${base}/galeria/mural-valle.svg`,
+		alt: 'Un valle con árboles de mango, un río, casas y cerros bajo el sol.',
+	},
+	{
+		tipo: 'Festival',
+		titulo: 'La comunidad celebra',
+		texto: 'La comunidad se reúne para ver, celebrar y hacer suyo lo creado.',
+		imagen: `${base}/galeria/mural-festival.svg`,
+		alt: 'Jóvenes sobre un escenario y público con los brazos arriba, entre banderines y fuegos artificiales.',
+	},
+];
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<title>Galería — COLAB Cultural</title>
+		<meta
+			name="description"
+			content="Recorre la sala de COLAB Cultural en 3D: murales con realidad aumentada y videos de los laboratorios."
+		/>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Nunito:wght@400;600;800&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
+	<body>
+		<canvas id="sala" data-isotipo={isotipo.src} aria-hidden="true"></canvas>
+
+		<header class="barra">
+			<a class="marca" href={`${base}/#innovacion`}>
+				<Image src={isotipo} alt="" width={40} height={40} />
+				<span>← Volver a COLAB Cultural</span>
+			</a>
+			<p class="contador" aria-live="polite"></p>
+		</header>
+
+		<main>
+			<h1 class="solo-lector">Galería de COLAB Cultural</h1>
+
+			<article class="ficha entrada" data-ficha>
+				<div>
+					<p class="etiqueta">Pruébalo ahora</p>
+					<h2>Bienvenida a la galería</h2>
+					<p>Una sala con los murales y videos del proyecto. Recórrela obra por obra y mira alrededor arrastrando.</p>
+					<button type="button" class="boton" data-paso="1">Comenzar el recorrido →</button>
+				</div>
+			</article>
+			{
+				obras.map((obra) => (
+					<article
+						class="ficha"
+						data-ficha
+						data-obra
+						data-titulo={obra.titulo}
+						data-tipo={obra.tipo}
+						data-imagen={obra.imagen}
+						data-video={obra.video}
+					>
+						<div>
+							<p class="etiqueta">{obra.tipo}</p>
+							<h2>{obra.titulo}</h2>
+							{/* Sin WebGL la obra se ve aquí mismo */}
+							{obra.imagen && <img class="plana" src={obra.imagen} alt={obra.alt} width="1200" height="900" loading="lazy" />}
+							{obra.video && <video class="plana" src={obra.video} preload="metadata" controls playsinline />}
+							<p>{obra.texto}</p>
+							{obra.video && (
+								<button type="button" class="boton" data-reproducir>
+									▶ Reproducir
+								</button>
+							)}
+							{obra.escanear && (
+								<p class="acciones">
+									<a class="boton" href={camara}>
+										Abrir la cámara aquí
+									</a>
+									<a href={obra.imagen}>Ver en grande</a>
+								</p>
+							)}
+							{obra.imagen && !obra.escanear && (
+								<p class="acciones">
+									<a href={obra.imagen}>Ver en grande</a>
+								</p>
+							)}
+						</div>
+						{obra.escanear && (
+							<div class="escaneo">
+								<div class="qr" set:html={qr} role="img" aria-label="Código QR para abrir la cámara en tu celular" />
+								<p>Escanea el código con tu celular y apunta la cámara a este mural.</p>
+							</div>
+						)}
+					</article>
+				))
+			}
+
+			<nav class="mando" aria-label="Recorrido">
+				<button type="button" class="flecha" data-paso="-1" aria-label="Obra anterior">←</button>
+				<div class="puntos"></div>
+				<button type="button" class="flecha" data-paso="1" aria-label="Obra siguiente">→</button>
+			</nav>
+			<p class="aviso">Murales y video de prueba, hasta tener los que creen los estudiantes.</p>
+		</main>
+
+		<script>
+			import * as THREE from 'three';
+
+			const lienzo = document.querySelector('#sala');
+			const fichas = [...document.querySelectorAll('[data-ficha]')];
+			const datos = fichas.filter((ficha) => 'obra' in ficha.dataset).map((ficha) => ({ ...ficha.dataset }));
+			const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			let motor;
+			try {
+				motor = new THREE.WebGLRenderer({ canvas: lienzo, antialias: true });
+			} catch {
+				// Sin WebGL queda la lista de obras, que ya está en la página
+			}
+
+			if (motor) montar();
+
+			async function montar() {
+				document.documentElement.classList.add('gl');
+				// Los rótulos se dibujan con las fuentes de la página: se espera a que carguen, sin bloquear la sala
+				await Promise.race([
+					Promise.all([document.fonts.load('120px "Bree Serif"'), document.fonts.load('800 34px Nunito')]),
+					new Promise((listo) => setTimeout(listo, 1500)),
+				]);
+				motor.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+				// Medidas de la habitación, en metros
+				const ANCHO = 14;
+				const FONDO = 10;
+				const ALTO = 4.2;
+				const OJOS = 1.75;
+				const CUADRO = { ancho: 2.4, alto: 1.8, centro: 1.95 };
+
+				const escena = new THREE.Scene();
+				escena.background = new THREE.Color('#0b1530');
+				const camara = new THREE.PerspectiveCamera(50, 1, 0.1, 60);
+				const cargador = new THREE.TextureLoader();
+				const nitidez = motor.capabilities.getMaxAnisotropy();
+				const imagen = (url) => {
+					const textura = cargador.load(url);
+					textura.colorSpace = THREE.SRGBColorSpace;
+					textura.anisotropy = nitidez;
+					return textura;
+				};
+				// Texturas dibujadas a mano en un canvas: tablones, luces y rótulos
+				const dibujar = (ancho, alto, pintar) => {
+					const hoja = document.createElement('canvas');
+					hoja.width = ancho;
+					hoja.height = alto;
+					pintar(hoja.getContext('2d'), ancho, alto);
+					const textura = new THREE.CanvasTexture(hoja);
+					textura.colorSpace = THREE.SRGBColorSpace;
+					textura.anisotropy = nitidez;
+					return textura;
+				};
+
+				escena.add(new THREE.HemisphereLight('#ffffff', '#8a6f52', 2.2));
+				const lampara = new THREE.DirectionalLight('#fff1d6', 1.1);
+				lampara.position.set(2, 6, 4);
+				escena.add(lampara);
+
+				// Piso de madera
+				const madera = dibujar(512, 512, (g, w, h) => {
+					g.fillStyle = '#8f6238';
+					g.fillRect(0, 0, w, h);
+					for (let fila = 0; fila < 8; fila++) {
+						for (let tabla = -1; tabla < 3; tabla++) {
+							const tono = 150 + ((fila * 53 + tabla * 31) % 14);
+							g.fillStyle = `rgb(${tono + 22} ${tono - 30} ${tono - 84})`;
+							g.fillRect(tabla * 256 + (fila % 2) * 128 + 1, fila * 64 + 1, 254, 62);
+						}
+					}
+				});
+				madera.wrapS = madera.wrapT = THREE.RepeatWrapping;
+				madera.repeat.set(ANCHO / 2.5, FONDO / 2.5);
+				const piso = new THREE.Mesh(
+					new THREE.PlaneGeometry(ANCHO, FONDO),
+					new THREE.MeshStandardMaterial({ map: madera, roughness: 0.55 }),
+				);
+				piso.rotation.x = -Math.PI / 2;
+				escena.add(piso);
+
+				const techo = new THREE.Mesh(
+					new THREE.PlaneGeometry(ANCHO, FONDO),
+					new THREE.MeshStandardMaterial({ color: '#141d40', roughness: 1 }),
+				);
+				techo.rotation.x = Math.PI / 2;
+				techo.position.y = ALTO;
+				escena.add(techo);
+
+				// Paredes: cada una mira hacia el centro de la sala
+				const paredes = [
+					{ largo: FONDO, x: -ANCHO / 2, z: 0, giro: Math.PI / 2 },
+					{ largo: ANCHO, x: 0, z: -FONDO / 2, giro: 0 },
+					{ largo: FONDO, x: ANCHO / 2, z: 0, giro: -Math.PI / 2 },
+					{ largo: ANCHO, x: 0, z: FONDO / 2, giro: Math.PI },
+				];
+				const yeso = new THREE.MeshStandardMaterial({ color: '#e9e1d3', roughness: 0.95 });
+				const zocalo = new THREE.MeshStandardMaterial({ color: '#141d40', roughness: 0.8 });
+				for (const pared of paredes) {
+					const muro = new THREE.Mesh(new THREE.PlaneGeometry(pared.largo, ALTO), yeso);
+					muro.position.set(pared.x, ALTO / 2, pared.z);
+					muro.rotation.y = pared.giro;
+					escena.add(muro);
+					const base = new THREE.Mesh(new THREE.BoxGeometry(pared.largo, 0.16, 0.05), zocalo);
+					base.position.set(pared.x, 0.08, pared.z);
+					base.rotation.y = pared.giro;
+					escena.add(base);
+				}
+
+				// Banca al centro, para dar escala
+				const banca = new THREE.Mesh(
+					new THREE.BoxGeometry(2.6, 0.12, 0.7),
+					new THREE.MeshStandardMaterial({ color: '#663f8f', roughness: 0.6 }),
+				);
+				banca.position.set(0, 0.46, 0.4);
+				escena.add(banca);
+				for (const x of [-1.05, 1.05]) {
+					const pata = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.4, 0.6), zocalo);
+					pata.position.set(x, 0.2, 0.4);
+					escena.add(pata);
+				}
+
+				// Pared de la entrada: el isotipo y el nombre de la sala
+				const logo = new THREE.Mesh(
+					new THREE.PlaneGeometry(1.8, 1.8),
+					new THREE.MeshBasicMaterial({ map: imagen(lienzo.dataset.isotipo), transparent: true }),
+				);
+				logo.position.set(0, 2.5, FONDO / 2 - 0.03);
+				logo.rotation.y = Math.PI;
+				escena.add(logo);
+				const rotulo = new THREE.Mesh(
+					new THREE.PlaneGeometry(4.2, 0.7),
+					new THREE.MeshBasicMaterial({
+						transparent: true,
+						map: dibujar(1200, 200, (g) => {
+							g.fillStyle = '#0b1530';
+							g.textAlign = 'center';
+							g.textBaseline = 'middle';
+							g.font = '120px "Bree Serif", Georgia, serif';
+							g.fillText('COLAB Cultural', 600, 100);
+						}),
+					}),
+				);
+				rotulo.position.set(0, 1.15, FONDO / 2 - 0.03);
+				rotulo.rotation.y = Math.PI;
+				escena.add(rotulo);
+
+				// Las obras se reparten entre la pared izquierda, el fondo y la derecha
+				const tramo = 2 * FONDO + ANCHO;
+				const aLosLados = Math.round((datos.length * FONDO) / tramo);
+				const reparto = [aLosLados, datos.length - 2 * aLosLados, aLosLados];
+				const halo = dibujar(256, 256, (g) => {
+					const luz = g.createRadialGradient(128, 110, 10, 128, 128, 128);
+					luz.addColorStop(0, 'rgb(255 244 214 / 0.95)');
+					luz.addColorStop(1, 'rgb(255 244 214 / 0)');
+					g.fillStyle = luz;
+					g.fillRect(0, 0, 256, 256);
+				});
+				const sombra = dibujar(256, 256, (g) => {
+					const oscuro = g.createRadialGradient(128, 128, 60, 128, 128, 128);
+					oscuro.addColorStop(0, 'rgb(0 0 0 / 0.5)');
+					oscuro.addColorStop(1, 'rgb(0 0 0 / 0)');
+					g.fillStyle = oscuro;
+					g.fillRect(0, 0, 256, 256);
+				});
+				const moldura = new THREE.MeshStandardMaterial({ color: '#fbf6ec', roughness: 0.5 });
+				const riel = new THREE.MeshStandardMaterial({ color: '#0b1530', roughness: 0.6 });
+				const lienzos = [];
+				const videos = new Map();
+
+				let n = 0;
+				reparto.forEach((cuantas, lado) => {
+					const pared = paredes[lado];
+					for (let k = 0; k < cuantas; k++, n++) {
+						const obra = datos[n];
+						// De cerca a lejos por la izquierda, de izquierda a derecha al fondo, de lejos a cerca por la derecha
+						const t = ((k + 0.5) / cuantas - 0.5) * pared.largo;
+						const grupo = new THREE.Group();
+						grupo.position.set(
+							lado === 1 ? t : pared.x,
+							CUADRO.centro,
+							lado === 1 ? pared.z : lado === 0 ? -t : t,
+						);
+						grupo.rotation.y = pared.giro;
+
+						const luz = new THREE.Mesh(
+							new THREE.PlaneGeometry(CUADRO.ancho * 2.1, CUADRO.alto * 2.3),
+							new THREE.MeshBasicMaterial({ map: halo, transparent: true, depthWrite: false }),
+						);
+						luz.position.z = 0.012;
+						const penumbra = new THREE.Mesh(
+							new THREE.PlaneGeometry(CUADRO.ancho * 1.25, CUADRO.alto * 1.3),
+							new THREE.MeshBasicMaterial({ map: sombra, transparent: true, depthWrite: false }),
+						);
+						penumbra.position.set(0.05, -0.1, 0.024);
+						const marco = new THREE.Mesh(
+							new THREE.BoxGeometry(CUADRO.ancho + 0.16, CUADRO.alto + 0.16, 0.08),
+							moldura,
+						);
+						marco.position.z = 0.07;
+
+						let textura;
+						if (obra.video) {
+							const video = document.createElement('video');
+							video.src = obra.video;
+							video.preload = 'auto';
+							video.playsInline = true;
+							video.loop = true;
+							textura = new THREE.VideoTexture(video);
+							textura.colorSpace = THREE.SRGBColorSpace;
+							videos.set(n, video);
+						} else {
+							textura = imagen(obra.imagen);
+						}
+						const tela = new THREE.Mesh(
+							new THREE.PlaneGeometry(CUADRO.ancho, CUADRO.alto),
+							new THREE.MeshBasicMaterial({ map: textura, color: obra.video ? '#ffffff' : '#f4f4f4' }),
+						);
+						tela.position.z = 0.115;
+						tela.userData.obra = n;
+						lienzos.push(tela);
+
+						// Cartela a un lado, como en un museo
+						const cartela = new THREE.Mesh(
+							new THREE.PlaneGeometry(0.62, 0.31),
+							new THREE.MeshBasicMaterial({
+								map: dibujar(496, 248, (g, w, h) => {
+									g.fillStyle = '#fffdf8';
+									g.fillRect(0, 0, w, h);
+									g.fillStyle = '#0b1530';
+									g.font = '800 34px Nunito, system-ui, sans-serif';
+									g.fillText(obra.titulo, 28, 86, w - 56);
+									g.font = '26px Nunito, system-ui, sans-serif';
+									g.fillStyle = '#663f8f';
+									g.fillText(obra.tipo, 28, 136, w - 56);
+									g.fillStyle = '#f77f00';
+									g.fillRect(28, 176, 90, 8);
+								}),
+							}),
+						);
+						cartela.position.set(CUADRO.ancho / 2 + 0.52, -CUADRO.alto / 2 + 0.2, 0.02);
+
+						// Foco en el techo apuntando a la obra
+						const foco = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.11, 0.24, 12), riel);
+						foco.position.set(0, ALTO - CUADRO.centro - 0.2, 1.3);
+						foco.rotation.x = -0.6;
+
+						grupo.add(luz, penumbra, marco, tela, cartela, foco);
+						escena.add(grupo);
+						obra.grupo = grupo;
+					}
+				});
+
+				// Recorrido: la parada 0 es la entrada y las demás, una por obra
+				const destino = { pos: new THREE.Vector3(), mira: new THREE.Vector3() };
+				const ahora = { pos: new THREE.Vector3(), mira: new THREE.Vector3() };
+				const vista = { giro: 0, alza: 0 };
+				let parada = 0;
+				let vertical = false;
+
+				function encuadrar() {
+					if (parada === 0) {
+						destino.pos.set(0, OJOS, FONDO / 2 - 1.2);
+						destino.mira.set(0, OJOS + 0.1, -FONDO / 2);
+						return;
+					}
+					const grupo = datos[parada - 1].grupo;
+					const normal = new THREE.Vector3(0, 0, 1).applyQuaternion(grupo.quaternion);
+					// Distancia para que el cuadro ocupe buena parte del ancho de la pantalla
+					const medioAncho = Math.tan(THREE.MathUtils.degToRad(camara.fov / 2)) * camara.aspect;
+					const distancia = Math.min(CUADRO.ancho / (vertical ? 0.86 : 0.46) / (2 * medioAncho), 7.5);
+					destino.pos.copy(grupo.position).addScaledVector(normal, distancia).setY(OJOS);
+					// En vertical la ficha tapa la parte baja: se mira más abajo para subir el cuadro
+					destino.mira.copy(grupo.position).setY(CUADRO.centro - (vertical ? distancia * 0.2 : 0.1));
+				}
+
+				const puntos = document.querySelector('.puntos');
+				const contador = document.querySelector('.contador');
+				fichas.forEach((_, i) => {
+					const punto = document.createElement('button');
+					punto.type = 'button';
+					punto.setAttribute('aria-label', i === 0 ? 'Ir a la entrada' : `Ir a: ${datos[i - 1].titulo}`);
+					punto.addEventListener('click', () => ir(i));
+					puntos.append(punto);
+				});
+
+				function ir(i) {
+					parada = Math.min(Math.max(i, 0), fichas.length - 1);
+					vista.giro = vista.alza = 0;
+					encuadrar();
+					fichas.forEach((ficha, k) => ficha.classList.toggle('activa', k === parada));
+					[...puntos.children].forEach((punto, k) => {
+						if (k === parada) punto.setAttribute('aria-current', 'true');
+						else punto.removeAttribute('aria-current');
+					});
+					// Un video solo suena mientras se está frente a él
+					videos.forEach((video, k) => k !== parada - 1 && video.pause());
+					document.querySelector('.flecha[data-paso="-1"]').disabled = parada === 0;
+					document.querySelector('.flecha[data-paso="1"]').disabled = parada === fichas.length - 1;
+					contador.textContent = parada === 0 ? '' : `${parada} / ${datos.length}`;
+				}
+
+				document.querySelectorAll('[data-paso]').forEach((boton) => {
+					boton.addEventListener('click', () => ir(parada + Number(boton.dataset.paso)));
+				});
+				addEventListener('keydown', (e) => {
+					const paso = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+					if (paso) ir(parada + paso);
+				});
+
+				document.querySelectorAll('[data-reproducir]').forEach((boton) => {
+					const video = videos.get(fichas.indexOf(boton.closest('[data-ficha]')) - 1);
+					const alternar = () => (video.paused ? video.play() : video.pause());
+					boton.addEventListener('click', alternar);
+					const rotular = () => (boton.textContent = video.paused ? '▶ Reproducir' : '❚❚ Pausar');
+					video.addEventListener('play', rotular);
+					video.addEventListener('pause', rotular);
+				});
+
+				// Arrastrar gira la mirada; un toque sobre una obra lleva hasta ella
+				const rayo = new THREE.Raycaster();
+				let agarre = null;
+				lienzo.addEventListener('pointerdown', (e) => {
+					agarre = { x: e.clientX, y: e.clientY, giro: vista.giro, alza: vista.alza, movido: false };
+					lienzo.setPointerCapture(e.pointerId);
+				});
+				lienzo.addEventListener('pointermove', (e) => {
+					if (!agarre) return;
+					const dx = e.clientX - agarre.x;
+					const dy = e.clientY - agarre.y;
+					if (Math.abs(dx) + Math.abs(dy) > 6) agarre.movido = true;
+					vista.giro = THREE.MathUtils.clamp(agarre.giro + dx * 0.004, -1.3, 1.3);
+					vista.alza = THREE.MathUtils.clamp(agarre.alza + dy * 0.003, -0.4, 0.4);
+				});
+				lienzo.addEventListener('pointerup', (e) => {
+					const toque = agarre && !agarre.movido;
+					agarre = null;
+					if (!toque) return;
+					const caja = lienzo.getBoundingClientRect();
+					rayo.setFromCamera(
+						new THREE.Vector2(
+							((e.clientX - caja.left) / caja.width) * 2 - 1,
+							-((e.clientY - caja.top) / caja.height) * 2 + 1,
+						),
+						camara,
+					);
+					const tocada = rayo.intersectObjects(lienzos)[0]?.object.userData.obra;
+					if (tocada === undefined) return;
+					const video = videos.get(tocada);
+					if (tocada === parada - 1 && video) video.paused ? video.play() : video.pause();
+					else ir(tocada + 1);
+				});
+				lienzo.addEventListener('pointercancel', () => (agarre = null));
+
+				function medir() {
+					const ancho = innerWidth;
+					const alto = innerHeight;
+					// Una pestaña abierta en segundo plano puede medir cero: se espera al siguiente cambio de tamaño
+					if (!ancho || !alto) return;
+					vertical = ancho < alto;
+					motor.setSize(ancho, alto, false);
+					camara.aspect = ancho / alto;
+					camara.fov = vertical ? 62 : 50;
+					// En pantallas anchas la ficha ocupa la izquierda: la vista se corre para que la obra quede libre
+					if (ancho >= 900) camara.setViewOffset(ancho, alto, -Math.min(210, ancho * 0.15), 0, ancho, alto);
+					else camara.clearViewOffset();
+					camara.updateProjectionMatrix();
+					encuadrar();
+				}
+				addEventListener('resize', medir);
+
+				let antes = performance.now();
+				const rumbo = new THREE.Vector3();
+				const esfera = new THREE.Spherical();
+				let primera = true;
+				motor.setAnimationLoop(() => {
+					// La cámara se desliza hacia su parada, sin saltos
+					const tiempo = performance.now();
+					const suave = primera || quieto ? 1 : 1 - Math.exp(((antes - tiempo) / 1000) * 2.6);
+					antes = tiempo;
+					primera = false;
+					ahora.pos.lerp(destino.pos, suave);
+					ahora.mira.lerp(destino.mira, suave);
+					camara.position.copy(ahora.pos);
+					esfera.setFromVector3(rumbo.subVectors(ahora.mira, ahora.pos));
+					esfera.theta += vista.giro;
+					esfera.phi = THREE.MathUtils.clamp(esfera.phi - vista.alza, 0.4, Math.PI - 0.4);
+					camara.lookAt(rumbo.setFromSpherical(esfera).add(ahora.pos));
+					motor.render(escena, camara);
+				});
+
+				medir();
+				ir(0);
+			}
+		</script>
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--marino: #0b1530;
+		--morado: #663f8f;
+		--naranja: #f77f00;
+	}
+	* {
+		box-sizing: border-box;
+	}
+	body {
+		margin: 0;
+		min-height: 100svh;
+		font-family: 'Nunito', system-ui, sans-serif;
+		font-size: 1.0625rem;
+		line-height: 1.55;
+		color: #fff;
+		background: var(--marino);
+	}
+	h1,
+	h2 {
+		font-family: 'Bree Serif', Georgia, serif;
+		font-weight: 400;
+		line-height: 1.15;
+		margin: 0 0 0.4em;
+	}
+	h2 {
+		font-size: clamp(1.4rem, 3.4vw, 1.9rem);
+	}
+	p {
+		margin: 0 0 0.9em;
+	}
+	a {
+		color: #fff;
+	}
+	.solo-lector {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.etiqueta {
+		margin: 0 0 0.4em;
+		font-weight: 800;
+		font-size: 0.78rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: #ffb35c;
+	}
+	#sala {
+		display: none;
+	}
+	.barra {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 12px 20px;
+	}
+	.marca {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-weight: 800;
+		text-decoration: none;
+	}
+	.marca img {
+		border-radius: 50%;
+		background: #fff;
+	}
+	.contador {
+		margin: 0;
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
+	}
+	.boton {
+		display: inline-block;
+		padding: 12px 22px;
+		border: 0;
+		border-radius: 999px;
+		background: var(--naranja);
+		color: var(--marino);
+		font: inherit;
+		font-weight: 800;
+		text-decoration: none;
+		cursor: pointer;
+		transition:
+			background 0.2s,
+			translate 0.2s;
+	}
+	.boton:hover {
+		background: #fff;
+		translate: 0 -2px;
+	}
+	.acciones {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px 20px;
+	}
+	.qr {
+		flex: none;
+		width: 132px;
+		padding: 8px;
+		border-radius: 12px;
+		background: #fff;
+		line-height: 0;
+	}
+	.escaneo {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		margin-top: 16px;
+		padding-top: 16px;
+		border-top: 1px solid rgb(255 255 255 / 0.2);
+		font-size: 0.92rem;
+	}
+	.escaneo p {
+		margin: 0;
+	}
+	.aviso {
+		font-size: 0.85rem;
+		opacity: 0.7;
+	}
+
+	/* Sin WebGL: las obras en una lista, una debajo de otra */
+	main {
+		max-width: 720px;
+		margin: 0 auto;
+		padding: 0 20px 40px;
+	}
+	.ficha {
+		margin-bottom: 20px;
+		padding: 22px 24px;
+		border-radius: 20px;
+		border: 1px solid rgb(255 255 255 / 0.18);
+		background: rgb(11 21 48 / 0.82);
+	}
+	.ficha p:last-child {
+		margin-bottom: 0;
+	}
+	.plana {
+		display: block;
+		width: 100%;
+		height: auto;
+		margin-bottom: 14px;
+		border-radius: 8px;
+	}
+	.mando,
+	[data-reproducir],
+	.entrada .boton {
+		display: none;
+	}
+
+	/* Con WebGL: la sala ocupa la pantalla y la ficha de la parada flota encima */
+	.gl body {
+		overflow: hidden;
+	}
+	.gl #sala {
+		position: fixed;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+		touch-action: none;
+		cursor: grab;
+	}
+	.gl #sala:active {
+		cursor: grabbing;
+	}
+	.gl .barra {
+		position: fixed;
+		inset: 0 0 auto;
+		z-index: 2;
+		background: linear-gradient(rgb(11 21 48 / 0.75), transparent);
+		pointer-events: none;
+	}
+	.gl .barra > * {
+		pointer-events: auto;
+	}
+	.gl main {
+		position: fixed;
+		left: 24px;
+		bottom: 24px;
+		z-index: 2;
+		width: min(400px, calc(100vw - 48px));
+		margin: 0;
+		padding: 0;
+		pointer-events: none;
+	}
+	.gl main > * {
+		pointer-events: auto;
+	}
+	.gl .ficha {
+		margin-bottom: 12px;
+		backdrop-filter: blur(10px);
+	}
+	.gl .ficha:not(.activa),
+	.gl .plana {
+		display: none;
+	}
+	.gl [data-reproducir],
+	.gl .entrada .boton {
+		display: inline-block;
+	}
+	.gl .mando {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 8px;
+		border-radius: 999px;
+		background: rgb(11 21 48 / 0.82);
+		backdrop-filter: blur(10px);
+	}
+	.flecha {
+		flex: none;
+		display: grid;
+		place-items: center;
+		width: 48px;
+		height: 48px;
+		border: 0;
+		border-radius: 50%;
+		background: #fff;
+		color: var(--marino);
+		font: inherit;
+		font-size: 1.4rem;
+		font-weight: 800;
+		cursor: pointer;
+		transition:
+			background 0.2s,
+			opacity 0.2s;
+	}
+	.flecha:hover:not(:disabled) {
+		background: var(--naranja);
+	}
+	.flecha:disabled {
+		opacity: 0.3;
+		cursor: default;
+	}
+	.puntos {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.puntos button {
+		width: 10px;
+		height: 10px;
+		padding: 0;
+		border: 0;
+		border-radius: 999px;
+		background: rgb(255 255 255 / 0.35);
+		cursor: pointer;
+		transition:
+			width 0.3s,
+			background 0.3s;
+	}
+	.puntos button[aria-current] {
+		width: 28px;
+		background: var(--naranja);
+	}
+	.gl .aviso {
+		margin: 8px 12px 0;
+		text-shadow: 0 1px 4px rgb(0 0 0 / 0.8);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.gl .ficha.activa {
+			animation: surgir 0.45s ease-out;
+		}
+	}
+	@keyframes surgir {
+		from {
+			opacity: 0;
+			translate: 0 12px;
+		}
+	}
+
+	@media (max-width: 760px) {
+		.marca span {
+			font-size: 0.9rem;
+		}
+		.gl main {
+			left: 12px;
+			bottom: calc(12px + env(safe-area-inset-bottom));
+			width: calc(100vw - 24px);
+		}
+		.gl .ficha {
+			margin-bottom: 8px;
+			padding: 16px 18px;
+			font-size: 0.95rem;
+		}
+		/* En el celular el QR no sirve: la cámara se abre en el mismo aparato */
+		.escaneo,
+		.gl .aviso {
+			display: none;
+		}
+	}
+</style>

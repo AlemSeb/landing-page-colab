@@ -11,11 +11,8 @@ import cabezaNaranja from '../assets/logo/cabeza-naranja.png';
 import cabezaVerde from '../assets/logo/cabeza-verde.png';
 import pelota from '../assets/logo/pelota.png';
 import rayos from '../assets/logo/rayos.png';
-import QRCode from 'qrcode';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const demoUrl = new URL(`${base}/demo/`, Astro.site).href;
-const demoQr = await QRCode.toString(demoUrl, { type: 'svg', margin: 1, color: { dark: '#0b1530' } });
 
 // Piezas del isotipo en el orden en que se pintan al hacer scroll.
 // de/dur: tramo del recorrido (0 a 1) en que aparece cada una.
@@ -41,22 +38,55 @@ const hayContacto = Boolean(contacto.whatsapp || contacto.correo);
 // 38.8% de un aula de 45 son unos 17 estudiantes
 const enRiesgo = new Set([1, 4, 7, 9, 12, 14, 17, 20, 22, 24, 27, 29, 32, 35, 38, 40, 43]);
 const mateo = 22;
+// --n: turno en que se enciende cada estudiante en riesgo.
+// --d: distancia a Mateo en la cuadrícula de 9 columnas; las olas de animación salen de él.
+const ordenRiesgo = [...enRiesgo];
+const distancias = Array.from({ length: 45 }, (_, i) =>
+	Math.hypot((i % 9) - (mateo % 9), Math.floor(i / 9) - Math.floor(mateo / 9)).toFixed(2),
+);
 
+// icono: trazos SVG sobre una cuadrícula de 24; claves: ideas del texto que se muestran como etiquetas
 const etapas = [
-	{ nombre: 'Diagnóstico', texto: 'Escuchamos a estudiantes, familias y docentes para entender su realidad.' },
+	{
+		nombre: 'Diagnóstico',
+		texto: 'Escuchamos a estudiantes, familias y docentes para entender su realidad.',
+		color: 'var(--naranja)',
+		icono: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+		claves: ['Estudiantes', 'Familias', 'Docentes'],
+	},
 	{
 		nombre: 'Laboratorios',
 		texto: 'Espacios de cine, deporte y muralismo donde los adolescentes crean y deciden.',
+		color: 'var(--magenta)',
+		icono:
+			'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/>',
 		labs: [
-			{ nombre: 'Cine', texto: 'Los estudiantes graban el documental colaborativo “Nuestras historias”.' },
-			{ nombre: 'Deporte', texto: 'El deporte como espacio de encuentro y trabajo en equipo.' },
+			{
+				nombre: 'Cine',
+				texto: 'Los estudiantes graban el documental colaborativo “Nuestras historias”.',
+				icono: '<rect x="3" y="7" width="13" height="11" rx="2"/><path d="m16 11 5-3v9l-5-3"/>',
+			},
+			{
+				nombre: 'Deporte',
+				texto: 'El deporte como espacio de encuentro y trabajo en equipo.',
+				icono:
+					'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6c3 3.4 3 9.4 0 12.8M18.4 5.6c-3 3.4-3 9.4 0 12.8"/>',
+			},
 			{
 				nombre: 'Muralismo',
 				texto: 'Pintan murales que luego se digitalizan y cobran vida con realidad aumentada.',
+				icono:
+					'<path d="M14 4h6v6l-7.5 7.5-6-6z"/><path d="m6.5 11.500 6 6-2 2c-1.500 1.500-5 1.500-7.500 1 .5-2.500-.5-5 1.500-7z"/>',
 			},
 		],
 	},
-	{ nombre: 'Festival', texto: 'La comunidad se reúne para ver, celebrar y hacer suyo lo creado.' },
+	{
+		nombre: 'Festival',
+		texto: 'La comunidad se reúne para ver, celebrar y hacer suyo lo creado.',
+		color: 'var(--verde)',
+		icono: '<path d="m12 3 2.7 5.600 6.100.8-4.500 4.200 1.100 6.100L12 16.800l-5.400 2.900 1.100-6.100-4.500-4.200 6.100-.8z"/>',
+		claves: ['Ver', 'Celebrar', 'Hacer suyo'],
+	},
 ];
 
 const aliados = [
@@ -175,7 +205,6 @@ const sostenibilidad = [
 						<p class="bajada">
 							Usamos el arte y la cultura para que los adolescentes encuentren nuevas formas de participar.
 						</p>
-						<a class="boton" href="#mateo">Conoce la historia de Mateo</a>
 						<p class="pista-scroll" aria-hidden="true">Desliza y mira cómo se pinta el logo ↓</p>
 					</div>
 					<div
@@ -199,7 +228,7 @@ const sostenibilidad = [
 								))
 							}
 						</div>
-						<Image src={marca} alt="" width={420} height={197} loading="eager" />
+						<Image class="lema" src={marca} alt="" width={420} height={197} loading="eager" />
 					</div>
 				</div>
 			</section>
@@ -209,7 +238,10 @@ const sostenibilidad = [
 					<div class="aula" aria-hidden="true">
 						{
 							Array.from({ length: 45 }, (_, i) => (
-								<span class:list={['alumno', { riesgo: enRiesgo.has(i), mateo: i === mateo }]}>
+								<span
+									class:list={['alumno', { riesgo: enRiesgo.has(i), mateo: i === mateo }]}
+									style={`--d: ${distancias[i]}; --n: ${ordenRiesgo.indexOf(i)}`}
+								>
 									<svg viewBox="0 0 24 32">
 										<circle cx="12" cy="7" r="6" />
 										<path d="M2 32c0-9 4-15 10-15s10 6 10 15z" />
@@ -230,26 +262,19 @@ const sostenibilidad = [
 						<p>En un aula de 45, eso equivale a unos 17 estudiantes.</p>
 					</article>
 					<article class="paso" data-paso="2">
-						<h2>Uno de ellos podría ser Mateo</h2>
+						<h2>Uno de ellos podría ser <em>Mateo</em></h2>
 						<p>Mateo podría ser el protagonista de su propia historia y no una cifra más.</p>
 					</article>
 					<article class="paso" data-paso="3">
-						<h2>¿Qué historia le toca a Mateo?</h2>
-						<div class="eleccion" role="group" aria-label="Elige el camino de Mateo">
-							<button type="button" data-eleccion="cifra" aria-pressed="false">Una cifra más</button>
-							<button type="button" data-eleccion="protagonista" aria-pressed="false">
-								Protagonista de su historia
-							</button>
-						</div>
-						<div aria-live="polite">
-							<p data-resultado="cifra" hidden>
-								Sin otra opción, Mateo se pierde en la estadística. Prueba el otro camino.
-							</p>
-							<p data-resultado="protagonista" hidden>
-								Elegir también es una oportunidad: con arte y cultura, Mateo y su aula encuentran nuevas
-								formas de participar. <a href="#impacto">Mira el cambio que buscamos</a>
-							</p>
-						</div>
+						<h2>Sin otra opción, sería <em>una cifra más</em></h2>
+						<p>Mateo se pierde en la estadística.</p>
+					</article>
+					<article class="paso" data-paso="4">
+						<h2>Elegir también es una <em>oportunidad</em></h2>
+						<p>
+							Con arte y cultura, Mateo y su aula encuentran nuevas formas de participar.
+							{' '}<a href="#impacto">Mira el cambio que buscamos</a>
+						</p>
 					</article>
 				</div>
 			</section>
@@ -281,48 +306,45 @@ const sostenibilidad = [
 
 			<section id="proceso" class="contenedor">
 				<h2>Un proceso en 3 etapas</h2>
-				<div class="proceso" style="--activa: 0">
-					<div class="linea" role="tablist" aria-label="Etapas del proceso">
-						{
-							etapas.map((etapa, i) => (
-								<button
-									type="button"
-									role="tab"
-									id={`etapa-${i}`}
-									aria-controls={`panel-${i}`}
-									aria-selected={i === 0 ? 'true' : 'false'}
-									tabindex={i === 0 ? 0 : -1}
-								>
-									<span class="numero">{i + 1}</span>
-									{etapa.nombre}
-								</button>
-							))
-						}
-					</div>
+				<ol class="proceso">
 					{
 						etapas.map((etapa, i) => (
-							<div class="panel" role="tabpanel" id={`panel-${i}`} aria-labelledby={`etapa-${i}`} hidden={i !== 0}>
-								<h3>{etapa.nombre}</h3>
-								<p>{etapa.texto}</p>
-								{etapa.labs && (
-									<ul class="labs">
-										{etapa.labs.map((lab) => (
-											<li>
-												<strong>{lab.nombre}</strong>
-												{lab.texto}
-											</li>
-										))}
-									</ul>
-								)}
-								{i < etapas.length - 1 && (
-									<button type="button" class="siguiente" data-ir={i + 1}>
-										Siguiente: {etapas[i + 1].nombre} →
-									</button>
-								)}
-							</div>
+							<li class="etapa" style={`--color: ${etapa.color}`}>
+								<span class="numero" aria-hidden="true">
+									<svg viewBox="0 0 24 24" set:html={etapa.icono} />
+								</span>
+								<div class="panel">
+									<span class="cifra" aria-hidden="true">
+										0{i + 1}
+									</span>
+									<p class="etiqueta">
+										Etapa {i + 1} de {etapas.length}
+									</p>
+									<h3>{etapa.nombre}</h3>
+									<p class="resumen">{etapa.texto}</p>
+									{etapa.claves && (
+										<ul class="claves">
+											{etapa.claves.map((clave) => (
+												<li>{clave}</li>
+											))}
+										</ul>
+									)}
+									{etapa.labs && (
+										<ul class="labs">
+											{etapa.labs.map((lab) => (
+												<li>
+													<svg viewBox="0 0 24 24" aria-hidden="true" set:html={lab.icono} />
+													<strong>{lab.nombre}</strong>
+													{lab.texto}
+												</li>
+											))}
+										</ul>
+									)}
+								</div>
+							</li>
 						))
 					}
-				</div>
+				</ol>
 			</section>
 
 			<section id="innovacion" class="innovacion">
@@ -375,15 +397,14 @@ const sostenibilidad = [
 
 					<div class="prueba">
 						<div class="prueba-texto">
-							<p class="etiqueta">Demo</p>
+							<p class="etiqueta">Galería</p>
 							<h3>Pruébalo ahora</h3>
 							<ol>
-								<li>Escanea el código QR con tu celular.</li>
-								<li>Abre la cámara y apunta al mural.</li>
-								<li>Cambia entre el mural interactivo y el documental.</li>
+								<li>Entra a la galería y recorre las obras.</li>
+								<li>Mira los videos sin salir de la sala.</li>
+								<li>Escanea el código QR de un mural y apúntale con la cámara.</li>
 							</ol>
-							<div class="qr" set:html={demoQr} role="img" aria-label="Código QR de la demo" />
-							<a class="boton" href={`${base}/demo/`}>Abrir la demo en este dispositivo</a>
+							<a class="boton" href={`${base}/galeria/`}>Entrar a la galería</a>
 							<p class="aviso">Mural y video de prueba, hasta tener los que creen los estudiantes.</p>
 						</div>
 						<div class="mural-vivo">
@@ -415,39 +436,36 @@ const sostenibilidad = [
 			</section>
 
 			<section id="aliados" class="contenedor">
-				<h2>Aliados clave</h2>
-				<p class="bajada">Una red alrededor de los estudiantes. Toca cada aliado para ver su papel.</p>
-				<div class="red">
-					<div class="mapa">
-						<svg viewBox="-100 -100 200 200" aria-hidden="true">
-							{aliados.map((a, i) => <line x1="0" y1="0" x2={a.x * 78} y2={a.y * 78} data-linea={i} class:list={{ activa: i === 0 }} />)}
-						</svg>
-						<Image class="centro" src={isotipo} alt="COLAB Cultural" width={140} height={140} />
-						{
-							aliados.map((a, i) => (
-								<button
-									type="button"
-									class="nodo"
-									data-aliado={i}
-									data-tipo={a.tipo}
-									aria-pressed={i === 0 ? 'true' : 'false'}
-									style={`left: ${50 + a.x * 39}%; top: ${50 + a.y * 39}%`}
-								>
-									{a.corto}
-								</button>
-							))
-						}
-					</div>
-					<div class="ficha" aria-live="polite">
-						{
-							aliados.map((a, i) => (
-								<article data-ficha={i} hidden={i !== 0}>
-									<p class="etiqueta">{a.tipo}</p>
-									<h3>{a.nombre}</h3>
-									<p>{a.texto}</p>
-								</article>
-							))
-						}
+				<div class="tramo">
+					<div class="fija">
+						<h2>Aliados clave</h2>
+						<p class="bajada">Una red alrededor de los estudiantes. Desliza y mira cómo se teje.</p>
+						<div class="red">
+							<div class="mapa">
+								<svg viewBox="-100 -100 200 200" aria-hidden="true">
+									{aliados.map((a, i) => <line x1="0" y1="0" x2={a.x * 78} y2={a.y * 78} pathLength="1" data-linea={i} />)}
+								</svg>
+								<Image class="centro" src={isotipo} alt="COLAB Cultural" width={140} height={140} />
+								{
+									aliados.map((a) => (
+										<span class="nodo" data-tipo={a.tipo} style={`left: ${50 + a.x * 39}%; top: ${50 + a.y * 39}%`}>
+											{a.corto}
+										</span>
+									))
+								}
+							</div>
+							<div class="ficha">
+								{
+									aliados.map((a, i) => (
+										<article data-ficha={i} data-tipo={a.tipo}>
+											<p class="etiqueta">{a.tipo}</p>
+											<h3>{a.nombre}</h3>
+											<p>{a.texto}</p>
+										</article>
+									))
+								}
+							</div>
+						</div>
 					</div>
 				</div>
 			</section>
@@ -522,7 +540,7 @@ const sostenibilidad = [
 					{ threshold: 0.12 },
 				);
 				const bloques =
-					'.hero > *, #impacto h2, #impacto blockquote, .metas li, #proceso > *, #innovacion .contenedor > :not(.opciones), .opciones article, #aliados > *, #sostenibilidad h2, .tarjetas article, .nota, .cierre p, #contacto > *';
+					'.hero > *, #impacto h2, #impacto blockquote, .metas li, #proceso > *, #innovacion .contenedor > :not(.opciones), .opciones article, #aliados .fija > *, #sostenibilidad h2, .tarjetas article, .nota, .cierre p, #contacto > *';
 				document.querySelectorAll(bloques).forEach((el) => {
 					const orden = [...el.parentElement.children].filter((h) => h.matches(bloques)).indexOf(el);
 					el.style.setProperty('--orden', Math.min(orden, 4));
@@ -564,28 +582,59 @@ const sostenibilidad = [
 
 			// La historia de Mateo avanza con el paso que cruza el centro de la pantalla
 			const historia = document.querySelector('.historia');
+			const pasos = document.querySelectorAll('.paso');
 			const alCentro = new IntersectionObserver(
 				(entradas) => {
 					for (const entrada of entradas) {
-						if (entrada.isIntersecting) historia.dataset.paso = entrada.target.dataset.paso;
+						if (!entrada.isIntersecting) continue;
+						const llegaAlFinal = entrada.target.dataset.paso === '4' && historia.dataset.paso !== '4';
+						historia.dataset.paso = entrada.target.dataset.paso;
+						if (llegaAlFinal && !quieto) celebrar();
+						pasos.forEach((paso) => paso.classList.toggle('activo', paso === entrada.target));
 					}
 				},
 				// En celular el aula queda fija arriba, así que la línea de cambio baja
 				{ rootMargin: matchMedia('(max-width: 760px)').matches ? '-65% 0px -35% 0px' : '-45% 0px -45% 0px' },
 			);
-			document.querySelectorAll('.paso').forEach((paso) => alCentro.observe(paso));
+			pasos.forEach((paso) => alCentro.observe(paso));
 
-			const opciones = document.querySelectorAll('[data-eleccion]:is(button)');
-			opciones.forEach((boton) => {
-				boton.addEventListener('click', () => {
-					const eleccion = boton.dataset.eleccion;
-					historia.dataset.eleccion = eleccion;
-					opciones.forEach((b) => b.setAttribute('aria-pressed', String(b === boton)));
-					document
-						.querySelectorAll('[data-resultado]')
-						.forEach((p) => (p.hidden = p.dataset.resultado !== eleccion));
-				});
-			});
+			// El aula se llena de estudiantes la primera vez que se ve
+			const aula = historia.querySelector('.aula');
+			const alLlegar = new IntersectionObserver(
+				([entrada]) => {
+					if (!entrada.isIntersecting) return;
+					alLlegar.disconnect();
+					historia.classList.add('entro');
+				},
+				{ threshold: 0.4 },
+			);
+			alLlegar.observe(aula);
+
+			// Papel picado que sale de Mateo cuando su historia cambia
+			function celebrar() {
+				const origen = aula.querySelector('.mateo');
+				const colores = ['#c2187a', '#f77f00', '#4fa85a', '#0b5fb0', '#663f8f', '#ffb000'];
+				for (let i = 0; i < 54; i++) {
+					const papel = document.createElement('i');
+					papel.className = 'papel';
+					papel.style.background = colores[i % colores.length];
+					papel.style.left = origen.offsetLeft + origen.offsetWidth / 2 + 'px';
+					papel.style.top = origen.offsetTop + origen.offsetHeight / 2 + 'px';
+					aula.append(papel);
+					const angulo = Math.random() * Math.PI * 2;
+					const fuerza = 80 + Math.random() * 200;
+					const x = Math.cos(angulo) * fuerza;
+					const y = Math.sin(angulo) * fuerza - 70;
+					papel.animate(
+						[
+							{ translate: '0 0', rotate: '0turn', opacity: 1 },
+							{ translate: `${x}px ${y}px`, opacity: 1, offset: 0.55 },
+							{ translate: `${x * 1.15}px ${y + 150}px`, rotate: `${Math.random() * 3 - 1.5}turn`, opacity: 0 },
+						],
+						{ duration: 1200 + Math.random() * 800, easing: 'cubic-bezier(0.15, 0.7, 0.3, 1)' },
+					).onfinish = () => papel.remove();
+				}
+			}
 
 			// Las cifras cuentan desde cero la primera vez que se ven
 			function contar(el) {
@@ -612,39 +661,38 @@ const sostenibilidad = [
 			);
 			document.querySelectorAll('[data-contar], .medidor').forEach((el) => alVer.observe(el));
 
-			// Etapas del proceso: pestañas con flechas del teclado
+			// El proceso y la red de aliados se pintan según cuánto se ha recorrido
 			const proceso = document.querySelector('.proceso');
-			const etapas = [...proceso.querySelectorAll('[role="tab"]')];
-			function irAEtapa(i, enfocar = false) {
-				proceso.style.setProperty('--activa', i);
-				etapas.forEach((tab, n) => {
-					tab.setAttribute('aria-selected', String(n === i));
-					tab.tabIndex = n === i ? 0 : -1;
-					document.getElementById(tab.getAttribute('aria-controls')).hidden = n !== i;
-				});
-				if (enfocar) etapas[i].focus();
-			}
-			etapas.forEach((tab, i) => {
-				tab.addEventListener('click', () => irAEtapa(i));
-				tab.addEventListener('keydown', (e) => {
-					const paso = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-					if (paso) irAEtapa((i + paso + etapas.length) % etapas.length, true);
-				});
-			});
-			proceso.querySelectorAll('[data-ir]').forEach((boton) => {
-				boton.addEventListener('click', () => irAEtapa(Number(boton.dataset.ir), true));
-			});
+			const etapas = proceso.querySelectorAll('.etapa');
+			const tramo = document.querySelector('.tramo');
+			const fija = tramo.querySelector('.fija');
+			const nodos = tramo.querySelectorAll('.nodo');
+			const lineas = tramo.querySelectorAll('[data-linea]');
+			const fichas = tramo.querySelectorAll('[data-ficha]');
+			const entre = (valor) => Math.min(Math.max(valor, 0), 1);
+			const pintar = () => {
+				// La línea del proceso se llena hasta la altura que se está leyendo
+				const marca = innerHeight * 0.6;
+				const riel = proceso.getBoundingClientRect();
+				proceso.style.setProperty('--r', entre((marca - riel.top - 32) / (riel.height - 64)));
+				etapas.forEach((etapa) => etapa.classList.toggle('llego', etapa.getBoundingClientRect().top + 32 <= marca));
 
-			// Mapa de aliados
-			const nodos = document.querySelectorAll('.nodo');
-			nodos.forEach((nodo) => {
-				nodo.addEventListener('click', () => {
-					const i = nodo.dataset.aliado;
-					nodos.forEach((n) => n.setAttribute('aria-pressed', String(n === nodo)));
-					document.querySelectorAll('[data-linea]').forEach((l) => l.classList.toggle('activa', l.dataset.linea === i));
-					document.querySelectorAll('[data-ficha]').forEach((f) => (f.hidden = f.dataset.ficha !== i));
+				// Cada tramo de scroll suma un aliado a la red y muestra su papel
+				const caja = tramo.getBoundingClientRect();
+				const antes = innerHeight * 0.5;
+				const r = entre((antes - caja.top) / (caja.height - fija.offsetHeight + antes - 65));
+				const pintados = Math.ceil(r * nodos.length);
+				nodos.forEach((nodo, i) => {
+					nodo.classList.toggle('pintado', i < pintados);
+					nodo.classList.toggle('activo', i === pintados - 1);
+					lineas[i].classList.toggle('pintada', i < pintados);
+					lineas[i].classList.toggle('activa', i === pintados - 1);
+					fichas[i].classList.toggle('activa', i === pintados - 1);
 				});
-			});
+			};
+			addEventListener('scroll', pintar, { passive: true });
+			addEventListener('resize', pintar);
+			pintar();
 
 			// Vista previa del mural sin celular
 			const mural = document.querySelector('.mural-boton');
@@ -800,12 +848,13 @@ const sostenibilidad = [
 	}
 	@media (prefers-reduced-motion: no-preference) {
 		.js .escena {
-			height: calc(100svh + 100vh);
+			height: calc(100svh + 160vh);
 		}
 		.js .hero {
 			position: sticky;
 			top: 65px;
 			min-height: calc(100svh - 65px);
+			padding-block: 32px;
 			align-content: center;
 		}
 		.js .pista-scroll {
@@ -819,10 +868,33 @@ const sostenibilidad = [
 		font-weight: 600;
 		opacity: calc(0.7 - var(--p, 1) * 6);
 	}
+	/* El isotipo es el protagonista: ocupa la columna y crece a medida que se pinta */
 	.iso {
 		position: relative;
-		width: 62%;
+		isolation: isolate;
+		width: min(100%, 54svh);
 		aspect-ratio: 1;
+		scale: calc(0.86 + var(--p, 1) * 0.14);
+	}
+	/* Halo con los colores de la marca que se enciende con el avance */
+	.iso::before {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		inset: 4%;
+		border-radius: 50%;
+		background: conic-gradient(
+			from 200deg at 53.6% 52%,
+			var(--magenta),
+			var(--naranja),
+			var(--verde),
+			var(--azul),
+			var(--morado),
+			var(--magenta)
+		);
+		filter: blur(56px);
+		opacity: calc(0.08 + var(--p, 1) * 0.24);
+		scale: calc(0.65 + var(--p, 1) * 0.45);
 	}
 	.iso img {
 		position: absolute;
@@ -831,8 +903,16 @@ const sostenibilidad = [
 		height: 100%;
 	}
 	.boceto {
-		opacity: 0.1;
+		opacity: 0.14;
 		filter: grayscale(1);
+	}
+	/* El nombre entra al final, cuando el isotipo ya está completo */
+	.lema {
+		width: min(54%, 280px);
+		/* El fondo blanco de la imagen no debe tapar el halo */
+		mix-blend-mode: multiply;
+		opacity: calc((var(--p, 1) - 0.82) * 7);
+		translate: 0 calc((1 - clamp(0, (var(--p, 1) - 0.82) * 7, 1)) * 14px);
 	}
 	.capa {
 		--t: clamp(0, calc((var(--p, 1) - var(--de)) / var(--dur)), 1);
@@ -886,11 +966,11 @@ const sostenibilidad = [
 	}
 
 	.hero {
-		max-width: 1080px;
+		max-width: 1180px;
 		margin: 0 auto;
 		padding: 72px 20px;
 		display: grid;
-		grid-template-columns: 1.2fr 1fr;
+		grid-template-columns: 1fr 1.05fr;
 		align-items: center;
 		gap: 32px;
 	}
@@ -921,7 +1001,26 @@ const sostenibilidad = [
 		gap: 64px;
 		padding-top: 0;
 		padding-bottom: 0;
-		background: var(--crema);
+		--fondo: var(--crema);
+		--tinta: var(--marino);
+		--apagado: #d9d2e3;
+		--foco: 0;
+		overflow-x: clip;
+		background: var(--fondo);
+		color: var(--tinta);
+		transition:
+			background 0.9s,
+			color 0.9s;
+	}
+	/* Al llegar a Mateo se apagan las luces del aula y queda un foco sobre él */
+	.historia:is([data-paso='2'], [data-paso='3']) {
+		--fondo: var(--marino);
+		--tinta: #fff;
+		--apagado: rgb(255 255 255 / 0.12);
+		--foco: 1;
+	}
+	.historia[data-paso='3'] {
+		--foco: 0;
 	}
 	.historia-visual {
 		position: sticky;
@@ -934,16 +1033,48 @@ const sostenibilidad = [
 		height: calc(100svh - 76px);
 	}
 	.aula {
+		position: relative;
 		display: grid;
 		grid-template-columns: repeat(9, 1fr);
 		gap: 10px 6px;
 	}
+	/* Foco de luz centrado en Mateo */
+	.aula::before {
+		content: '';
+		position: absolute;
+		inset: -25%;
+		background: radial-gradient(circle, rgb(255 205 130 / 0.3), transparent 58%);
+		opacity: var(--foco);
+		transition: opacity 0.9s;
+		pointer-events: none;
+	}
 	.alumno {
 		position: relative;
-		color: #d9d2e3;
+		color: var(--apagado);
 		transition:
-			color 0.6s,
-			transform 0.6s;
+			color 0.6s var(--espera, 0s),
+			transform 0.6s,
+			opacity 0.6s,
+			scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--d) * 70ms);
+	}
+	/* Los estudiantes brotan desde el centro y los que están en riesgo se encienden uno a uno */
+	.js .historia:not(.entro) .alumno {
+		scale: 0;
+	}
+	.js .historia:not(.entro) .alumno.riesgo {
+		color: var(--apagado);
+	}
+	.historia[data-paso='1'] .alumno.riesgo {
+		--espera: calc(0.5s + var(--n) * 80ms);
+	}
+	.papel {
+		position: absolute;
+		z-index: 2;
+		width: 8px;
+		height: 13px;
+		margin: -6px 0 0 -4px;
+		border-radius: 2px;
+		pointer-events: none;
 	}
 	.alumno svg {
 		display: block;
@@ -961,50 +1092,103 @@ const sostenibilidad = [
 		translate: -50% 0;
 		font-size: 0.6rem;
 		font-weight: 800;
-		color: var(--marino);
+		color: var(--tinta);
+		opacity: 0;
+		transition:
+			opacity 0.6s,
+			color 0.9s;
+	}
+	/* Resplandor que late detrás de Mateo */
+	.alumno.mateo {
+		z-index: 1;
+	}
+	.alumno.mateo::before {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		inset: -45%;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgb(247 127 0 / 0.6), transparent 66%);
 		opacity: 0;
 		transition: opacity 0.6s;
 	}
+	.historia:not([data-paso='1']) .alumno:not(.mateo) {
+		transform: scale(0.86);
+	}
 	.historia:not([data-paso='1']) .alumno.riesgo:not(.mateo) {
-		color: #b3a1c9;
+		color: rgb(255 255 255 / 0.34);
 	}
 	.historia:not([data-paso='1']) .alumno.mateo {
-		z-index: 1;
 		color: var(--naranja);
-		transform: scale(1.6);
+		transform: scale(1.7);
 	}
-	.historia:not([data-paso='1']) .alumno.mateo::after {
+	.historia:not([data-paso='1']) .alumno.mateo::after,
+	.historia:not([data-paso='1']) .alumno.mateo::before {
 		opacity: 1;
 	}
-	.historia[data-eleccion='cifra'] .alumno.riesgo {
-		color: var(--morado);
-		transform: none;
+	/* Una cifra más: Mateo se hunde con el resto y el foco se apaga */
+	.historia[data-paso='3'] .aula .alumno.riesgo {
+		color: #9b7cc0;
+		opacity: 0.75;
+		transform: translateY(16%) scale(0.86);
 	}
-	.historia[data-eleccion='cifra'] .alumno.mateo::after {
+	.historia[data-paso='3'] .aula .alumno.mateo::after,
+	.historia[data-paso='3'] .aula .alumno.mateo::before {
 		opacity: 0;
 	}
-	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n + 1) {
+	/* Protagonista: el color se contagia en ola desde Mateo */
+	.historia[data-paso='4'] .alumno {
+		--espera: calc(var(--d) * 90ms);
+	}
+	.historia[data-paso='4'] .aula .alumno:not(.mateo) {
+		transform: none;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.historia:not([data-paso='1']) .alumno.mateo::before {
+			animation: pulso 1.6s ease-in-out infinite alternate;
+		}
+		.historia[data-paso='4'] .aula .alumno:not(.mateo) {
+			animation: brincar 0.42s ease-in-out calc(var(--d) * 90ms) 6 alternate;
+		}
+	}
+	@keyframes pulso {
+		to {
+			scale: 1.4;
+		}
+	}
+	@keyframes brincar {
+		to {
+			transform: translateY(-24%);
+		}
+	}
+	@keyframes surgir {
+		from {
+			opacity: 0;
+			translate: 0 12px;
+		}
+	}
+	.historia[data-paso='4'] .aula .alumno:not(.mateo):nth-child(5n + 1) {
 		color: var(--magenta);
 	}
-	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n + 2) {
+	.historia[data-paso='4'] .aula .alumno:not(.mateo):nth-child(5n + 2) {
 		color: var(--azul);
 	}
-	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n + 3) {
+	.historia[data-paso='4'] .aula .alumno:not(.mateo):nth-child(5n + 3) {
 		color: var(--verde);
 	}
-	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n + 4) {
+	.historia[data-paso='4'] .aula .alumno:not(.mateo):nth-child(5n + 4) {
 		color: var(--morado);
 	}
-	.historia[data-eleccion='protagonista'] .aula .alumno:not(.mateo):nth-child(5n) {
+	.historia[data-paso='4'] .aula .alumno:not(.mateo):nth-child(5n) {
 		color: #ffb000;
 	}
-	.historia[data-eleccion='protagonista'] .alumno.mateo {
+	.historia[data-paso='4'] .alumno.mateo {
 		color: var(--naranja);
 		animation: saltar 0.7s ease-in-out infinite alternate;
 	}
 	@keyframes saltar {
 		to {
-			transform: scale(1.6) translateY(-12%);
+			transform: scale(1.7) translateY(-14%);
 		}
 	}
 	.aula-pie {
@@ -1017,6 +1201,22 @@ const sostenibilidad = [
 		flex-direction: column;
 		justify-content: center;
 		min-height: 85vh;
+	}
+	/* Solo el paso que se está leyendo queda a plena vista */
+	.js .paso {
+		opacity: 0.16;
+		translate: 0 24px;
+		transition:
+			opacity 0.6s,
+			translate 0.6s;
+	}
+	.js .paso.activo {
+		opacity: 1;
+		translate: none;
+	}
+	.paso h2 em {
+		font-style: normal;
+		color: var(--naranja);
 	}
 	.paso a {
 		color: var(--morado);
@@ -1035,31 +1235,6 @@ const sostenibilidad = [
 		line-height: 1;
 		color: var(--morado);
 		font-variant-numeric: tabular-nums;
-	}
-	.eleccion {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 12px;
-		margin: 8px 0 20px;
-	}
-	.eleccion button {
-		padding: 14px 22px;
-		border: 2px solid var(--marino);
-		border-radius: 999px;
-		background: transparent;
-		color: var(--marino);
-		font: inherit;
-		font-weight: 800;
-		cursor: pointer;
-	}
-	.eleccion button[aria-pressed='true'] {
-		background: var(--marino);
-		color: #fff;
-	}
-	.eleccion button[data-eleccion='protagonista'][aria-pressed='true'] {
-		border-color: var(--naranja);
-		background: var(--naranja);
-		color: var(--marino);
 	}
 	[hidden] {
 		display: none !important;
@@ -1116,107 +1291,207 @@ const sostenibilidad = [
 	}
 
 	.proceso {
-		margin-top: 32px;
-	}
-	.linea {
 		position: relative;
+		list-style: none;
+		margin: 32px 0 0;
+		padding: 0;
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		gap: 40px;
 	}
-	/* La línea une los centros de la primera y la última etapa */
-	.linea::before,
-	.linea::after {
+	/* El riel une las etapas y se llena de color con el scroll */
+	.proceso::before,
+	.proceso::after {
 		content: '';
 		position: absolute;
-		left: calc(100% / 6);
-		top: 20px;
-		height: 4px;
-		border-radius: 2px;
+		left: 29px;
+		top: 32px;
+		bottom: 32px;
+		width: 6px;
+		border-radius: 3px;
 	}
-	.linea::before {
-		width: calc(100% * 2 / 3);
+	.proceso::before {
 		background: var(--lila);
 	}
-	.linea::after {
-		width: calc(100% / 3 * var(--activa));
-		background: var(--morado);
-		transition: width 0.5s;
+	.proceso::after {
+		background: linear-gradient(180deg, var(--naranja), var(--magenta), var(--verde));
+		clip-path: inset(0 0 calc(100% - var(--r, 1) * 100%) 0 round 3px);
 	}
-	.linea button {
-		position: relative;
-		z-index: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 10px;
-		padding: 0 4px;
-		border: 0;
-		background: none;
-		font: inherit;
-		font-weight: 800;
-		color: var(--marino);
-		cursor: pointer;
+	.etapa {
+		display: grid;
+		grid-template-columns: 64px minmax(0, 1fr);
+		align-items: start;
+		gap: 24px;
 	}
+	/* El ícono acompaña la lectura de su etapa */
 	.numero {
+		position: sticky;
+		top: 96px;
+		z-index: 1;
 		display: grid;
 		place-items: center;
-		width: 44px;
-		height: 44px;
+		width: 64px;
+		height: 64px;
 		border-radius: 50%;
-		border: 4px solid var(--lila);
-		background: #fff;
-		color: var(--marino);
-		transition:
-			background 0.3s,
-			scale 0.3s;
-	}
-	.linea button[aria-selected='true'] .numero {
-		border-color: var(--morado);
-		background: var(--morado);
+		border: 4px solid var(--color);
+		background: var(--color);
 		color: #fff;
-		scale: 1.15;
+		box-shadow: 0 0 0 8px color-mix(in srgb, var(--color) 18%, transparent);
+		transition:
+			background 0.4s,
+			border-color 0.4s,
+			color 0.4s,
+			scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+			box-shadow 0.4s;
+	}
+	.numero svg,
+	.labs svg {
+		width: 28px;
+		height: 28px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+	.js .etapa:not(.llego) .numero {
+		border-color: var(--lila);
+		background: #fff;
+		color: var(--color);
+		box-shadow: none;
+		scale: 0.8;
+	}
+	.js .panel {
+		transition:
+			opacity 0.6s,
+			translate 0.6s;
+	}
+	.js .etapa:not(.llego) .panel {
+		opacity: 0;
+		translate: 40px 0;
 	}
 	.panel {
-		margin-top: 28px;
-		padding: 28px;
-		border-radius: 20px;
-		background: var(--lila);
+		position: relative;
+		overflow: hidden;
+		padding: 36px;
+		border-radius: 24px;
+		border-left: 8px solid var(--color);
+		background: color-mix(in srgb, var(--color) 9%, #fff);
+	}
+	.panel > * {
+		position: relative;
+	}
+	/* Número grande de fondo */
+	.panel .cifra {
+		position: absolute;
+		right: 24px;
+		top: -0.16em;
+		font-family: 'Bree Serif', Georgia, serif;
+		font-size: clamp(7rem, 20vw, 13rem);
+		line-height: 1;
+		color: var(--color);
+		opacity: 0.13;
+		pointer-events: none;
+	}
+	.panel .etiqueta {
+		color: var(--color);
+		filter: brightness(0.8);
+	}
+	.panel h3 {
+		font-size: clamp(1.8rem, 4vw, 2.4rem);
+	}
+	.resumen {
+		max-width: 44ch;
+		font-size: 1.15rem;
+	}
+	.claves {
+		list-style: none;
+		padding: 0;
+		margin: 20px 0 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+	.claves li {
+		padding: 8px 18px;
+		border-radius: 999px;
+		border: 2px solid var(--color);
+		background: #fff;
+		font-weight: 800;
 	}
 	.labs {
 		list-style: none;
 		padding: 0;
-		margin: 20px 0 0;
+		margin: 24px 0 0;
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 16px;
 	}
 	.labs li {
+		--tono: var(--naranja);
 		padding: 20px;
 		border-radius: 16px;
-		border-top: 6px solid var(--naranja);
+		border-top: 6px solid var(--tono);
 		background: #fff;
+		box-shadow: 0 6px 20px rgb(11 21 48 / 0.06);
+		transition:
+			translate 0.25s,
+			box-shadow 0.25s;
+	}
+	.labs li:hover {
+		translate: 0 -6px;
+		box-shadow: 0 14px 28px rgb(11 21 48 / 0.12);
 	}
 	.labs li:nth-child(2) {
-		border-color: var(--verde);
+		--tono: var(--verde);
 	}
 	.labs li:nth-child(3) {
-		border-color: var(--magenta);
+		--tono: var(--azul);
+	}
+	.labs svg {
+		box-sizing: content-box;
+		padding: 10px;
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--tono) 14%, #fff);
+		color: var(--tono);
 	}
 	.labs strong {
 		display: block;
+		margin-top: 8px;
 		font-family: 'Bree Serif', Georgia, serif;
 		font-weight: 400;
 		font-size: 1.25rem;
 	}
-	.siguiente {
-		margin-top: 20px;
-		padding: 0;
-		border: 0;
-		background: none;
-		font: inherit;
-		font-weight: 800;
-		color: var(--morado);
-		cursor: pointer;
+	/* Al llegar a cada etapa su contenido entra en cascada */
+	@media (prefers-reduced-motion: no-preference) {
+		.etapa.llego .panel > :not(.cifra),
+		.etapa.llego .panel :is(.labs, .claves) li {
+			animation: surgir 0.5s ease-out backwards;
+			animation-delay: calc(var(--turno, 0) * 80ms);
+		}
+		.panel > :nth-child(3),
+		.panel li:nth-child(1) {
+			--turno: 1;
+		}
+		.panel > :nth-child(4),
+		.panel li:nth-child(2) {
+			--turno: 2;
+		}
+		.panel > :nth-child(5),
+		.panel li:nth-child(3) {
+			--turno: 3;
+		}
+		.panel > :nth-child(n + 6) {
+			--turno: 4;
+		}
+		.etapa.llego .panel .cifra {
+			animation: asomar 0.7s ease-out both;
+		}
+	}
+	@keyframes asomar {
+		from {
+			opacity: 0;
+			translate: 40px 0;
+		}
 	}
 
 	.innovacion {
@@ -1415,15 +1690,8 @@ const sostenibilidad = [
 			translate: -50% -30%;
 		}
 	}
-	.qr {
-		width: 150px;
-		padding: 8px;
-		border-radius: 12px;
-		background: #fff;
-		line-height: 0;
-	}
 	.prueba .boton {
-		margin-top: 16px;
+		margin-top: 0;
 		background: var(--naranja);
 		color: var(--marino);
 	}
@@ -1555,12 +1823,24 @@ const sostenibilidad = [
 		}
 	}
 
+	/* La red queda fija mientras el scroll suma aliados uno por uno */
+	.js .tramo {
+		height: calc(100svh - 65px + 240vh);
+	}
+	.js .fija {
+		position: sticky;
+		top: 65px;
+		display: grid;
+		align-content: center;
+		min-height: calc(100svh - 65px);
+		padding-block: 16px;
+	}
 	.red {
 		display: grid;
-		grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+		grid-template-columns: minmax(0, min(520px, 62svh)) minmax(0, 1fr);
 		align-items: center;
 		gap: 48px;
-		margin-top: 24px;
+		margin-top: 8px;
 	}
 	.mapa {
 		position: relative;
@@ -1572,13 +1852,20 @@ const sostenibilidad = [
 		inset: 0;
 	}
 	.mapa line {
-		stroke: var(--lila);
+		stroke: #cdbfe0;
 		stroke-width: 1.5;
-		transition: stroke 0.3s;
+		stroke-dasharray: 1;
+		transition:
+			stroke 0.3s,
+			stroke-width 0.3s,
+			stroke-dashoffset 0.6s ease-out;
+	}
+	.js .mapa line:not(.pintada) {
+		stroke-dashoffset: 1;
 	}
 	.mapa line.activa {
-		stroke: var(--morado);
-		stroke-width: 2.5;
+		stroke: var(--tono-activo, var(--morado));
+		stroke-width: 3;
 	}
 	.mapa .centro {
 		position: absolute;
@@ -1590,51 +1877,83 @@ const sostenibilidad = [
 		border-radius: 50%;
 		background: #fff;
 	}
+	.nodo,
+	.ficha article {
+		--tono: var(--morado);
+	}
+	:is(.nodo, .ficha article)[data-tipo='Escuela'] {
+		--tono: var(--naranja);
+	}
+	:is(.nodo, .ficha article)[data-tipo='Familias'] {
+		--tono: var(--magenta);
+	}
+	:is(.nodo, .ficha article)[data-tipo='Estado'] {
+		--tono: var(--azul);
+	}
+	:is(.nodo, .ficha article)[data-tipo='Colectivo cultural'] {
+		--tono: var(--verde);
+	}
 	.nodo {
 		position: absolute;
+		display: grid;
+		place-items: center;
 		width: 22%;
 		aspect-ratio: 1;
 		translate: -50% -50%;
 		padding: 2px;
-		border: 3px solid var(--morado);
+		border: 3px solid var(--tono);
 		border-radius: 50%;
-		background: #fff;
+		background: color-mix(in srgb, var(--tono) 12%, #fff);
 		color: var(--marino);
-		font: inherit;
 		font-weight: 800;
 		font-size: clamp(0.62rem, 2.9cqw, 0.95rem);
 		line-height: 1.15;
-		cursor: pointer;
+		text-align: center;
 		transition:
-			scale 0.3s,
-			background 0.3s;
+			scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s,
+			opacity 0.3s 0.25s,
+			background 0.3s,
+			color 0.3s,
+			box-shadow 0.3s;
 	}
-	.nodo[data-tipo='Escuela'] {
-		border-color: var(--naranja);
+	.js .nodo:not(.pintado) {
+		scale: 0;
+		opacity: 0;
+		transition-delay: 0s;
 	}
-	.nodo[data-tipo='Familias'] {
-		border-color: var(--magenta);
-	}
-	.nodo[data-tipo='Estado'] {
-		border-color: var(--azul);
-	}
-	.nodo[data-tipo='Colectivo cultural'] {
-		border-color: var(--verde);
-	}
-	.nodo:hover {
-		scale: 1.08;
-	}
-	.nodo[aria-pressed='true'] {
-		border-color: var(--marino);
+	.nodo.activo {
 		background: var(--marino);
+		border-color: var(--marino);
 		color: #fff;
-		scale: 1.12;
+		scale: 1.14;
+		box-shadow: 0 0 0 8px color-mix(in srgb, var(--tono) 30%, transparent);
 	}
 	.ficha {
-		min-height: 9em;
+		min-height: 11em;
+	}
+	.ficha article {
+		padding-left: 20px;
+		border-left: 6px solid var(--tono);
+	}
+	.ficha .etiqueta {
+		color: var(--tono);
+	}
+	.ficha h3 {
+		font-size: clamp(1.5rem, 3vw, 2rem);
 	}
 	.ficha p:last-child {
 		margin: 0;
+	}
+	.js .ficha article:not(.activa) {
+		display: none;
+	}
+	html:not(.js) .ficha article + article {
+		margin-top: 20px;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.js .ficha article.activa {
+			animation: surgir 0.45s ease-out;
+		}
 	}
 
 	.tarjetas {
@@ -1735,11 +2054,40 @@ const sostenibilidad = [
 		}
 		.hero-logo {
 			order: -1;
-			width: min(260px, 34svh);
+			width: min(320px, 36svh);
 			margin: 0 auto;
 		}
 		.iso {
-			width: 80%;
+			width: 100%;
+		}
+		.iso::before {
+			filter: blur(36px);
+		}
+		.proceso {
+			gap: 28px;
+		}
+		.proceso::before,
+		.proceso::after {
+			left: 21px;
+			top: 24px;
+			bottom: 24px;
+		}
+		.etapa {
+			grid-template-columns: 48px minmax(0, 1fr);
+			gap: 14px;
+		}
+		.numero {
+			top: 80px;
+			width: 48px;
+			height: 48px;
+			box-shadow: 0 0 0 5px color-mix(in srgb, var(--color) 18%, transparent);
+		}
+		.numero svg {
+			width: 22px;
+			height: 22px;
+		}
+		.panel {
+			padding: 24px 20px;
 		}
 		.historia {
 			display: block;
@@ -1752,8 +2100,9 @@ const sostenibilidad = [
 			height: auto;
 			margin: 0 -16px;
 			padding: 16px 16px 12px;
-			background: var(--crema);
-			border-bottom: 1px solid #ecdcc6;
+			background: var(--fondo);
+			border-bottom: 1px solid color-mix(in srgb, var(--tinta) 12%, transparent);
+			transition: background 0.9s;
 		}
 		.aula {
 			max-width: 300px;
@@ -1766,25 +2115,22 @@ const sostenibilidad = [
 			font-size: 0.8rem;
 		}
 		.red {
-			gap: 16px;
+			gap: 12px;
 		}
-		/* La ficha va arriba para que se vea al tocar cualquier aliado */
+		/* La ficha va arriba, a altura fija, para que el mapa no salte */
 		.ficha {
 			order: -1;
-			padding: 20px;
+			min-height: 12.5em;
+			padding: 16px;
 			border-radius: 16px;
 			background: var(--lila);
 		}
 		.mapa {
-			width: 100%;
-			max-width: 440px;
+			width: min(100%, 44svh);
 			margin: 0 auto;
 		}
 		.panel {
 			padding: 20px;
-		}
-		.linea button {
-			font-size: 0.9rem;
 		}
 		.paso {
 			justify-content: flex-start;
