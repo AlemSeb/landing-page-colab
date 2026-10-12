@@ -8,6 +8,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const demoUrl = new URL(`${base}/demo/`, Astro.site).href;
 const demoQr = await QRCode.toString(demoUrl, { type: 'svg', margin: 1, color: { dark: '#0b1530' } });
 
+// Datos de contacto: la sección solo se muestra cuando hay al menos uno.
+// WhatsApp va con código de país y solo dígitos, por ejemplo '51987654321'.
+const contacto = { whatsapp: '', correo: '' };
+const saludo = 'Hola, quiero saber más sobre COLAB Cultural.';
+const hayContacto = Boolean(contacto.whatsapp || contacto.correo);
+
 // 38.8% de un aula de 45 son unos 17 estudiantes
 const enRiesgo = new Set([1, 4, 7, 9, 12, 14, 17, 20, 22, 24, 27, 29, 32, 35, 38, 40, 43]);
 const mateo = 22;
@@ -131,6 +137,7 @@ const sostenibilidad = [
 				<a href="#proceso">Proceso</a>
 				<a href="#innovacion">Innovación</a>
 				<a href="#aliados">Aliados</a>
+				{hayContacto && <a href="#contacto">Contacto</a>}
 			</nav>
 			<i class="avance" aria-hidden="true"></i>
 		</header>
@@ -424,6 +431,32 @@ const sostenibilidad = [
 			<section class="cierre">
 				<p>El futuro de los adolescentes de Tambogrande depende de la decisión que tomemos hoy.</p>
 			</section>
+
+			{
+				hayContacto && (
+					<section id="contacto" class="contacto">
+						<h2>Contáctanos</h2>
+						<p class="bajada">¿Quieres saber más sobre COLAB Cultural? Escríbenos.</p>
+						<div class="canales">
+							{contacto.whatsapp && (
+								<a
+									class="boton whatsapp"
+									href={`https://wa.me/${contacto.whatsapp}?text=${encodeURIComponent(saludo)}`}
+									target="_blank"
+									rel="noopener"
+								>
+									Escribir por WhatsApp
+								</a>
+							)}
+							{contacto.correo && (
+								<a class="boton correo" href={`mailto:${contacto.correo}`}>
+									{contacto.correo}
+								</a>
+							)}
+						</div>
+					</section>
+				)
+			}
 		</main>
 
 		<footer>
@@ -447,7 +480,7 @@ const sostenibilidad = [
 					{ threshold: 0.12 },
 				);
 				const bloques =
-					'.hero > *, #impacto h2, #impacto blockquote, .metas li, #proceso > *, #innovacion .contenedor > :not(.opciones), .opciones article, #aliados > *, #sostenibilidad h2, .tarjetas article, .nota, .cierre p';
+					'.hero > *, #impacto h2, #impacto blockquote, .metas li, #proceso > *, #innovacion .contenedor > :not(.opciones), .opciones article, #aliados > *, #sostenibilidad h2, .tarjetas article, .nota, .cierre p, #contacto > *';
 				document.querySelectorAll(bloques).forEach((el) => {
 					const orden = [...el.parentElement.children].filter((h) => h.matches(bloques)).indexOf(el);
 					el.style.setProperty('--orden', Math.min(orden, 4));
@@ -1521,6 +1554,35 @@ const sostenibilidad = [
 		font-family: 'Bree Serif', Georgia, serif;
 		font-size: clamp(1.8rem, 4.5vw, 3rem);
 		line-height: 1.2;
+	}
+
+	.contacto {
+		text-align: center;
+	}
+	.contacto .bajada {
+		margin: 0 auto 24px;
+	}
+	.canales {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 12px;
+	}
+	.canales .boton {
+		margin: 0;
+	}
+	.boton.whatsapp {
+		background: #1f7a4d;
+	}
+	.boton.correo {
+		background: none;
+		color: var(--marino);
+		box-shadow: inset 0 0 0 2px var(--marino);
+		overflow-wrap: anywhere;
+	}
+	.boton.correo:hover {
+		background: var(--marino);
+		color: #fff;
 	}
 
 	footer {
